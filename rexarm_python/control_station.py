@@ -62,6 +62,9 @@ class Gui(QtGui.QMainWindow):
         LAB TASK: CONNECT THE OTHER 5 SLIDERS IMPLEMENTED IN THE GUI 
         """ 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
+        self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
+        self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
+        self.ui.sldrWrist.valueChanged.connect(self.sliderChange)
         self.ui.sldrMaxTorque.valueChanged.connect(self.sliderChange)
 
         """ Commands the arm as the arm initialize to 0,0,0,0 angles """
@@ -139,6 +142,9 @@ class Gui(QtGui.QMainWindow):
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
+        self.rex.joint_angles[1] = self.ui.sldrShoulder.value()*D2R
+        self.rex.joint_angles[2] = self.ui.sldrElbow.value()*D2R
+        self.rex.joint_angles[3] = self.ui.sldrWrist.value()*D2R
         self.rex.cmd_publish()
 
     def mousePressEvent(self, QMouseEvent):
