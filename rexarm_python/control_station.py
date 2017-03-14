@@ -139,6 +139,9 @@ class Gui(QtGui.QMainWindow):
         TO DO: Implement for the other sliders
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
+        self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
+        self.ui.rdoutElbow.setText(str(self.ui.sldrElbow.value()))
+        self.ui.rdoutWrist.setText(str(self.ui.sldrWrist.value()))
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
