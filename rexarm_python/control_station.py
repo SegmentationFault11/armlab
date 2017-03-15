@@ -85,14 +85,14 @@ class Gui(QtGui.QMainWindow):
         """
 
         """ Renders the Video Frame """
-        try:
-            self.video.captureNextFrame()
-            self.video.blobDetector()
-            self.ui.videoFrame.setPixmap(
-                self.video.convertFrame())
-            self.ui.videoFrame.setScaledContents(True)
-        except TypeError:
-            print "No frame"
+        # try:
+        #     self.video.captureNextFrame()
+        #     self.video.blobDetector()
+        #     self.ui.videoFrame.setPixmap(
+        #         self.video.convertFrame())
+        #     self.ui.videoFrame.setScaledContents(True)
+        # except TypeError:
+        #     print "No frame"
         
         """ 
         Update GUI Joint Coordinates Labels

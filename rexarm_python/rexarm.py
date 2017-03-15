@@ -85,7 +85,20 @@ class Rexarm():
         arm is not damaged.
         LAB TASK: IMPLEMENT A CLAMP FUNCTION
         """
-        pass
+        if self.joint_angles[1] > 120*D2R:
+            self.joint_angles[1] = 120*D2R
+        if self.joint_angles[2] > 115*D2R:
+            self.joint_angles[2] = 115*D2R
+        if self.joint_angles[3] > 120*D2R:
+            self.joint_angles[3] = 120*D2R
+
+        if self.joint_angles[1] < -120*D2R:
+            self.joint_angles[1] = -120*D2R
+        if self.joint_angles[2] < -120*D2R:
+            self.joint_angles[2] = -120*D2R
+        if self.joint_angles[3] < -120*D2R:
+            self.joint_angles[3] = 120*D2R
+        print self.joint_angles[1]
 
     def plan_command(self):
         """ Command planned waypoints """
