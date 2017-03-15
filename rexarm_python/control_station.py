@@ -1,6 +1,7 @@
 import sys
 import cv2
 import numpy as np
+from time import sleep
 from PyQt4 import QtGui, QtCore, Qt
 from ui import Ui_MainWindow
 from rexarm import Rexarm
@@ -76,6 +77,15 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser1.setText("Affine Calibration")
         self.ui.btnUser1.clicked.connect(self.affine_cal)
 
+        self.ui.btnUser2.setText("Vodka")
+        self.ui.btnUser2.clicked.connect(self.serve_vodka)
+
+        self.ui.btnUser2.setText("Drink3")
+        self.ui.btnUser2.clicked.connect(self.drink3)
+
+        self.ui.btnUser2.setText("Drink4")
+        self.ui.btnUser2.clicked.connect(self.drink4)
+
 
 
     def play(self):
@@ -136,12 +146,9 @@ class Gui(QtGui.QMainWindow):
         """ 
         Function to change the slider labels when sliders are moved
         and to command the arm to the given position 
-        TO DO: Implement for the other sliders
+        Implement for the other sliders
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
-        self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
-        self.ui.rdoutElbow.setText(str(self.ui.sldrElbow.value()))
-        self.ui.rdoutWrist.setText(str(self.ui.sldrWrist.value()))
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
@@ -216,6 +223,34 @@ class Gui(QtGui.QMainWindow):
         """
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Affine Calibration: Click Point %d" 
+                                    %(self.video.mouse_click_id + 1))
+    def serve_vodka(self):
+        """ 
+        Function called when affine calibration button is called.
+        Note it only chnage the flag to record the next mouse clicks
+        and updates the status text label 
+        """
+        self.video.aff_flag = 1 
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
+                                    %(self.video.mouse_click_id + 1))
+        self.rex.joint_angles[0] = 30*D2R
+        self.rex.joint_angles[1] = 30*D2R
+        self.rex.joint_angles[2] = 30*D2R
+        self.rex.joint_angles[3] = 30*D2R
+        self.rex.cmd_publish()
+        sleep(3)
+        self.rex.joint_angles[0] = 60*D2R
+        self.rex.joint_angles[1] = 60*D2R
+        self.rex.joint_angles[2] = 60*D2R
+        self.rex.joint_angles[3] = 60*D2R
+        self.rex.cmd_publish()
+
+    def drink3(self):
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
+                                    %(self.video.mouse_click_id + 1))
+
+    def drink4(self):
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
                                     %(self.video.mouse_click_id + 1))
  
 def main():
