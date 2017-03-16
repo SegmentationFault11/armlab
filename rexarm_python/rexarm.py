@@ -112,7 +112,11 @@ class Rexarm():
         returns a 4-tuple (x, y, z, phi) representing the pose of the 
         desired link
         """
-        pass
+        d1 = link[0]
+        d2 = link[1]
+        d3 = link[2]
+        length = 
+        return ()
     	
     def rexarm_IK(pose, cfg):
         """
