@@ -1,6 +1,7 @@
 import sys
 import cv2
 import numpy as np
+from time import sleep
 from PyQt4 import QtGui, QtCore, Qt
 from ui import Ui_MainWindow
 from rexarm import Rexarm
@@ -17,6 +18,15 @@ MAX_X = 950
 
 MIN_Y = 30
 MAX_Y = 510
+
+""" Link lengths of arm """
+OFFSET = 7.50 / 100
+LINK1_LENGTH = 4.50 / 100
+LINK2_LENGTH = 10.00 / 100
+LINK3_LENGTH = 10.00 / 100
+LINK4_LENGTH = 11.00 / 100
+
+
  
 class Gui(QtGui.QMainWindow):
     """ 
@@ -62,6 +72,9 @@ class Gui(QtGui.QMainWindow):
         LAB TASK: CONNECT THE OTHER 5 SLIDERS IMPLEMENTED IN THE GUI 
         """ 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
+        self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
+        self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
+        self.ui.sldrWrist.valueChanged.connect(self.sliderChange)
         self.ui.sldrMaxTorque.valueChanged.connect(self.sliderChange)
 
         """ Commands the arm as the arm initialize to 0,0,0,0 angles """
@@ -73,6 +86,15 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser1.setText("Affine Calibration")
         self.ui.btnUser1.clicked.connect(self.affine_cal)
 
+        self.ui.btnUser2.setText("Vodka")
+        self.ui.btnUser2.clicked.connect(self.serve_vodka)
+
+        self.ui.btnUser3.setText("Drink3")
+        self.ui.btnUser3.clicked.connect(self.drink3)
+
+        self.ui.btnUser4.setText("Drink4")
+        self.ui.btnUser4.clicked.connect(self.drink4)
+
 
 
     def play(self):
@@ -82,14 +104,14 @@ class Gui(QtGui.QMainWindow):
         """
 
         """ Renders the Video Frame """
-        try:
-            self.video.captureNextFrame()
-            self.video.blobDetector()
-            self.ui.videoFrame.setPixmap(
-                self.video.convertFrame())
-            self.ui.videoFrame.setScaledContents(True)
-        except TypeError:
-            print "No frame"
+        # try:
+        #     self.video.captureNextFrame()
+        #     self.video.blobDetector()
+        #     self.ui.videoFrame.setPixmap(
+        #         self.video.convertFrame())
+        #     self.ui.videoFrame.setScaledContents(True)
+        # except TypeError:
+        #     print "No frame"
         
         """ 
         Update GUI Joint Coordinates Labels
@@ -133,12 +155,15 @@ class Gui(QtGui.QMainWindow):
         """ 
         Function to change the slider labels when sliders are moved
         and to command the arm to the given position 
-        TO DO: Implement for the other sliders
+        Implement for the other sliders
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
+        self.rex.joint_angles[1] = self.ui.sldrShoulder.value()*D2R
+        self.rex.joint_angles[2] = self.ui.sldrElbow.value()*D2R
+        self.rex.joint_angles[3] = self.ui.sldrWrist.value()*D2R
         self.rex.cmd_publish()
 
     def mousePressEvent(self, QMouseEvent):
@@ -207,6 +232,29 @@ class Gui(QtGui.QMainWindow):
         """
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Affine Calibration: Click Point %d" 
+                                    %(self.video.mouse_click_id + 1))
+    def serve_vodka(self):
+        """ 
+        Function called when affine calibration button is called.
+        Note it only chnage the flag to record the next mouse clicks
+        and updates the status text label 
+        """
+        self.video.aff_flag = 1 
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
+                                    %(self.video.mouse_click_id + 1))
+        dh_table = [[self.rex.joint_angles[0]*D2R, LINK1_LENGTH], [self.rex.joint_angles[1]*D2R, LINK2_LENGTH], [self.rex.joint_angles[2]*D2R, LINK3_LENGTH], [self.rex.joint_angles[3]*D2R, LINK4_LENGTH]]
+        print dh_table
+        final_point = self.rex.rexarm_fk(dh_table)
+        final_point[2] = final_point[2] + OFFSET
+        print final_point
+        self.rex.cmd_publish()
+
+    def drink3(self):
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
+                                    %(self.video.mouse_click_id + 1))
+
+    def drink4(self):
+        self.ui.rdoutStatus.setText("Serve Vodka %d" 
                                     %(self.video.mouse_click_id + 1))
  
 def main():

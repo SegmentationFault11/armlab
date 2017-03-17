@@ -1,6 +1,7 @@
 import lcm
 import time
 import numpy as np
+import math
 
 from lcmtypes import dynamixel_command_t
 from lcmtypes import dynamixel_command_list_t
@@ -85,13 +86,46 @@ class Rexarm():
         arm is not damaged.
         LAB TASK: IMPLEMENT A CLAMP FUNCTION
         """
-        pass
+        if self.joint_angles[1] > 120*D2R:
+            self.joint_angles[1] = 120*D2R
+        if self.joint_angles[2] > 115*D2R:
+            self.joint_angles[2] = 115*D2R
+        if self.joint_angles[3] > 120*D2R:
+            self.joint_angles[3] = 120*D2R
+
+        if self.joint_angles[1] < -120*D2R:
+            self.joint_angles[1] = -120*D2R
+        if self.joint_angles[2] < -120*D2R:
+            self.joint_angles[2] = -120*D2R
+        if self.joint_angles[3] < -120*D2R:
+            self.joint_angles[3] = 120*D2R
+        print self.joint_angles[1]
 
     def plan_command(self):
         """ Command planned waypoints """
         pass
 
-    def rexarm_FK(dh_table, link):
+    def rexarm_fk(self,dh_table):
+        print dh_table
+        final_point = np.matrix((0,0,0,1))
+        final_point = final_point.transpose()
+        print "dh_table[0][0] "
+        print dh_table[0][0]
+        matrix0 = np.matrix(((0,0,1,0), (1,0,0,0), (0,1,0,dh_table[0][1]), (0,0,0,0)))
+        matrix1 = self.link_fk(dh_table, 0)
+        matrix2 = self.link_fk(dh_table, 1)
+        matrix3 = self.link_fk(dh_table, 2)
+        matrix4 = self.link_fk(dh_table, 3)
+        print "MATRIX1 "
+        print matrix1
+        print "MATRIX2 "
+        print matrix2
+        result = np.mat(matrix1) * np.mat(matrix2)
+        print "RESULT "
+        print result
+        return (np.mat(matrix0) * (np.mat(matrix1) * (np.mat(matrix2) * (np.mat(matrix3) * (np.mat(matrix4) * final_point)))))
+ 
+    def link_fk(self, dh_table, link): 
         """
         Calculates forward kinematics for rexarm
         takes a DH table filled with DH parameters of the arm
@@ -99,8 +133,16 @@ class Rexarm():
         returns a 4-tuple (x, y, z, phi) representing the pose of the 
         desired link
         """
-        pass
-    	
+        # link = [index, whether it i]
+        print dh_table[link]
+        theta = dh_table[link][0]
+        d = dh_table[link][1]
+        print "THETA cos(theta)"
+        print theta, math.cos(theta)
+        if link == 0:
+            return np.array(((math.cos(theta), 0, 0, -math.sin(theta)), (0, 1, 0, 0), (math.sin(theta),0,math.cos(theta),0), (0,0,0,1)))
+        else:
+    	   return np.array(((math.cos(theta), -math.sin(theta), 0, math.sin(theta)*d), (math.sin(theta), math.cos(theta), 0, math.cos(theta)*d), (0,0,1,0), (0,0,0,1)))
     def rexarm_IK(pose, cfg):
         """
         Calculates inverse kinematics for the rexarm
