@@ -18,6 +18,15 @@ MAX_X = 950
 
 MIN_Y = 30
 MAX_Y = 510
+
+""" Link lengths of arm """
+OFFSET = 7.50 / 100
+LINK1_LENGTH = 4.50 / 100
+LINK2_LENGTH = 10.00 / 100
+LINK3_LENGTH = 10.00 / 100
+LINK4_LENGTH = 11.00 / 100
+
+
  
 class Gui(QtGui.QMainWindow):
     """ 
@@ -80,11 +89,11 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser2.setText("Vodka")
         self.ui.btnUser2.clicked.connect(self.serve_vodka)
 
-        self.ui.btnUser2.setText("Drink3")
-        self.ui.btnUser2.clicked.connect(self.drink3)
+        self.ui.btnUser3.setText("Drink3")
+        self.ui.btnUser3.clicked.connect(self.drink3)
 
-        self.ui.btnUser2.setText("Drink4")
-        self.ui.btnUser2.clicked.connect(self.drink4)
+        self.ui.btnUser4.setText("Drink4")
+        self.ui.btnUser4.clicked.connect(self.drink4)
 
 
 
@@ -233,16 +242,11 @@ class Gui(QtGui.QMainWindow):
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Serve Vodka %d" 
                                     %(self.video.mouse_click_id + 1))
-        self.rex.joint_angles[0] = 30*D2R
-        self.rex.joint_angles[1] = 30*D2R
-        self.rex.joint_angles[2] = 30*D2R
-        self.rex.joint_angles[3] = 30*D2R
-        self.rex.cmd_publish()
-        sleep(3)
-        self.rex.joint_angles[0] = 60*D2R
-        self.rex.joint_angles[1] = 60*D2R
-        self.rex.joint_angles[2] = 60*D2R
-        self.rex.joint_angles[3] = 60*D2R
+        dh_table = [[self.rex.joint_angles[0]*D2R, LINK1_LENGTH], [self.rex.joint_angles[1]*D2R, LINK2_LENGTH], [self.rex.joint_angles[2]*D2R, LINK3_LENGTH], [self.rex.joint_angles[3]*D2R, LINK4_LENGTH]]
+        print dh_table
+        final_point = self.rex.rexarm_fk(dh_table)
+        final_point[2] = final_point[2] + OFFSET
+        print final_point
         self.rex.cmd_publish()
 
     def drink3(self):
