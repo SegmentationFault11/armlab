@@ -15,7 +15,7 @@ ser.isOpen()
 print 'Enter your commands below.\r\nInsert "exit" to leave the application.'
 
 input=1
-send='1'
+print 'Input 1 for on, 0 for off.'
 while 1:
     # get keyboard input
     input = raw_input(">> ")
@@ -27,12 +27,7 @@ while 1:
     else:
         # send the character to the device
         # (note that I happend a \r\n carriage return and line feed to the characters - this is requested by my device)
-        print send
-        ser.write(send)
-        if send == '1':
-        	send = '0'
-        else:
-        	send = '1'
+        ser.write(input)
         out = ''
         # let's wait one second before reading output (let's give device time to answer)
         time.sleep(1)

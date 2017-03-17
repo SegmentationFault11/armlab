@@ -1,4 +1,5 @@
-char curr_read;
+char curr_read = 'x';
+char prev_read = 'y';
 bool on = false;
 
 void setup() {                
@@ -11,13 +12,16 @@ void loop() {
   if (Serial.available()) {
     /* read the most recent byte */
     curr_read = Serial.read();
-    on = !on;
+    if (curr_read != prev_read) {
+      on = !on;
+    }
     if (on) {
-      analogWrite(9, 0);
-    } else {
       analogWrite(9, 1023);
+    } else {
+      analogWrite(9, 0);
     }
     /*ECHO the value that was read, back to the serial port. */
     Serial.write(curr_read);
+    prev_read = curr_read;
   }
 }
