@@ -14,6 +14,6 @@ Then run `python valve.py`.
 The program waits for a signal from the Arduino 
 board before it sends a command.
 Unplug and plug if the connection cannot be established.
-Available commands are: 1, 2, 3, 4 ,5 ,6 ,7, or 8.
+Available commands are: `1, 2, 3, 4 ,5 ,6 ,7, or 8`.
 Any other commands will be ignored.
-To stop the valve controller, press 'Ctrl+C'.
+To stop the valve controller, press `Ctrl+C`.
