@@ -11,7 +11,7 @@ valve.py: Valve controller Python code.
 
 Connect the Arduino board to the computer using a USB cable.
 
--LCM Mode
+- LCM Mode
 
 Run `python valve.py` in the LCM mode (default mode).
 
