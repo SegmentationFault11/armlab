@@ -14,10 +14,10 @@ After that, run `python` followed by `import lcm` to ensure lcm is installed.
 To generate LCM python code,
 
 ```
-lcm-gen -p lcmtypes/* --ppath lcm/
+lcm-gen -p lcmtypes/* --ppath lcm_python/
 ```
 
-To compile the arm driver C code,
+To compile the C code,
 
 ```
 make
