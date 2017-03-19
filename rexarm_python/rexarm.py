@@ -111,19 +111,27 @@ class Rexarm():
         final_point = final_point.transpose()
         print "dh_table[0][0] "
         print dh_table[0][0]
-        matrix0 = np.matrix(((0,0,1,0), (1,0,0,0), (0,1,0,dh_table[0][1]), (0,0,0,0)))
-        matrix1 = self.link_fk(dh_table, 0)
-        matrix2 = self.link_fk(dh_table, 1)
+        theta1 = dh_table[0][0]
+        theta2 = dh_table[1][0]
+        print "Theta 1", theta1
+        matrix1_1 = np.matrix(((1,0,0,0), (0,0,1,0), (0,1,0,dh_table[0][1]), (0,0,0,1)))
+        matrix1_2 = np.matrix(((math.cos(theta1),0,math.sin(theta1),0), (0,1,0,0), (-math.sin(theta1),0,math.cos(theta1),0), (0,0,0,1)))
+        matrix2 = np.matrix(((math.cos(PI/2+theta2), -math.sin(PI/2+theta2), 0, math.cos(PI/2+theta2)*dh_table[1][1]), (math.sin(PI/2+theta2), math.cos(PI/2+theta2), 0, math.sin(PI/2+theta2)*dh_table[1][1]), (0,0,1,0), (0,0,0,1)))
+        #matrix2 = self.link_fk(dh_table, 1)
         matrix3 = self.link_fk(dh_table, 2)
         matrix4 = self.link_fk(dh_table, 3)
-        print "MATRIX1 "
-        print matrix1
+        print "MATRIX1_1 "
+        print matrix1_1
+        print "MATRIX1_2 "
+        print matrix1_2
         print "MATRIX2 "
         print matrix2
-        result = np.mat(matrix1) * np.mat(matrix2)
-        print "RESULT "
-        print result
-        return (np.mat(matrix0) * (np.mat(matrix1) * (np.mat(matrix2) * (np.mat(matrix3) * (np.mat(matrix4) * final_point)))))
+        print "first RESULT\n",(np.mat(matrix4) * final_point)
+        print "second RESULT\n",(np.mat(matrix3)*(np.mat(matrix4) * final_point))
+        print "3rd RESULT\n",np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))
+        print "4th RESULT\n",np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point)))
+        print "5th RESULT\n",np.mat(matrix1_1)*(np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))))
+        return (np.mat(matrix1_1)*(np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point)))))
  
     def link_fk(self, dh_table, link): 
         """
@@ -137,13 +145,13 @@ class Rexarm():
         print dh_table[link]
         theta = dh_table[link][0]
         d = dh_table[link][1]
-        print "THETA cos(theta)"
+        print "link ", link, "theta ", theta
         print theta, math.cos(theta)
         if link == 0:
             return np.array(((math.cos(theta), 0, 0, -math.sin(theta)), (0, 1, 0, 0), (math.sin(theta),0,math.cos(theta),0), (0,0,0,1)))
         else:
-    	   return np.array(((math.cos(theta), -math.sin(theta), 0, math.sin(theta)*d), (math.sin(theta), math.cos(theta), 0, math.cos(theta)*d), (0,0,1,0), (0,0,0,1)))
-    def rexarm_IK(pose, cfg):
+    	   return np.array(((math.cos(theta), -math.sin(theta), 0, math.cos(theta)*d), (math.sin(theta), math.cos(theta), 0, math.sin(theta)*d), (0,0,1,0), (0,0,0,1)))
+    def rexarm_ik(self, pose, cfg):
         """
         Calculates inverse kinematics for the rexarm
         pose is a tuple (x, y, z, phi) which describes the desired
@@ -151,8 +159,52 @@ class Rexarm():
         cfg describe elbow down (0) or elbow up (1) configuration
         returns a 4-tuple of joint angles or NONE if configuration is impossible
         """
-        pass
+        x_g = pose[0]
+        y_g = pose[1]
+        z_g = pose[2]
+        phi = pose[3]
+        print "x_g", x_g
+        print "y_g", y_g
+        print "z_g", z_g
+        print "phi", phi
         
+        L1 = cfg[0]
+        L2 = cfg[1]
+        L3 = cfg[2]
+        L4 = cfg[3]
+        print "L1", L1
+        print "L2", L2
+        print "L3", L3
+        print "L4", L4
+        z_g_prime = z_g + L4*math.sin(phi)
+        r_g_prime  = math.sqrt(math.pow(x_g, 2) + math.pow(y_g, 2)) - L4*math.cos(phi)
+        delta_z = z_g_prime - L1
+        delta_r = r_g_prime
+        print "z_g_prime", z_g_prime
+        print "g_g",math.sqrt(math.pow(x_g, 2) + math.pow(y_g, 2))
+        print "r_g_prime", r_g_prime
+        print "delta_z", delta_z
+        print "delta_r", delta_r 
+        # theta3 in [0, pi]
+        print "delta_z^2", math.pow(delta_z,2)
+        print "delta_r^2", math.pow(delta_r,2)
+        print "L2^2", math.pow(L2,2)
+        print "L3^2", math.pow(L3,2)
+        print "ACOS THETA",(math.pow(delta_z,2)+math.pow(delta_r,2)-math.pow(L2,2)-math.pow(L3,2))/(2*L2*L3)
+        theta3 = math.acos((math.pow(delta_z,2)+math.pow(delta_r,2)-math.pow(L2,2)-math.pow(L3,2))/(2*L2*L3))
+        # theta3 in [-pi/2, pi/2]
+        theta3 = theta3 - PI/2
+        beta = math.atan2(delta_z,delta_r)
+        psi = math.acos((L3*L3-(delta_z*delta_z+delta_r*delta_r)-L2*L2)/(-2*math.sqrt(delta_z*delta_z+delta_r*delta_r)*L2))
+        theta2 = 0.0
+        if theta3 >= 0:
+            theta2 = PI/2-beta-psi
+        else:
+            theta2 = PI/2-beta+psi
+        theta4 = phi-theta2-theta3+PI/2
+        theta1 = math.atan2(y_g,x_g)
+        return [theta1, theta2, theta3, theta4]
+
     def rexarm_collision_check(q):
         """
         Perform a collision check with the ground and the base

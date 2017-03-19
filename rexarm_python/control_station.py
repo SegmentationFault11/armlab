@@ -11,6 +11,7 @@ from video import Video
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
+PI = np.pi
 
 """ Pyxel Positions of image in GUI """
 MIN_X = 310
@@ -24,7 +25,7 @@ OFFSET = 7.50 / 100
 LINK1_LENGTH = 4.50 / 100
 LINK2_LENGTH = 10.00 / 100
 LINK3_LENGTH = 10.00 / 100
-LINK4_LENGTH = 11.00 / 100
+LINK4_LENGTH = 7.5 / 100 # holder changed to other number
 
 
  
@@ -86,11 +87,11 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser1.setText("Affine Calibration")
         self.ui.btnUser1.clicked.connect(self.affine_cal)
 
-        self.ui.btnUser2.setText("Vodka")
-        self.ui.btnUser2.clicked.connect(self.serve_vodka)
+        self.ui.btnUser2.setText("Forward Kinematics")
+        self.ui.btnUser2.clicked.connect(self.fk)
 
-        self.ui.btnUser3.setText("Drink3")
-        self.ui.btnUser3.clicked.connect(self.drink3)
+        self.ui.btnUser3.setText("Inverse Kinemetics")
+        self.ui.btnUser3.clicked.connect(self.ik)
 
         self.ui.btnUser4.setText("Drink4")
         self.ui.btnUser4.clicked.connect(self.drink4)
@@ -158,6 +159,10 @@ class Gui(QtGui.QMainWindow):
         Implement for the other sliders
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
+        self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
+        self.ui.rdoutElbow.setText(str(self.ui.sldrElbow.value()))
+        self.ui.rdoutWrist.setText(str(self.ui.sldrWrist.value()))
+
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
@@ -233,7 +238,7 @@ class Gui(QtGui.QMainWindow):
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Affine Calibration: Click Point %d" 
                                     %(self.video.mouse_click_id + 1))
-    def serve_vodka(self):
+    def fk(self):
         """ 
         Function called when affine calibration button is called.
         Note it only chnage the flag to record the next mouse clicks
@@ -242,16 +247,23 @@ class Gui(QtGui.QMainWindow):
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Serve Vodka %d" 
                                     %(self.video.mouse_click_id + 1))
-        dh_table = [[self.rex.joint_angles[0]*D2R, LINK1_LENGTH], [self.rex.joint_angles[1]*D2R, LINK2_LENGTH], [self.rex.joint_angles[2]*D2R, LINK3_LENGTH], [self.rex.joint_angles[3]*D2R, LINK4_LENGTH]]
-        print dh_table
+
+        dh_table = [[self.rex.joint_angles_fb[0], LINK1_LENGTH], [self.rex.joint_angles_fb[1], LINK2_LENGTH], [self.rex.joint_angles_fb[2], LINK3_LENGTH], [self.rex.joint_angles_fb[3], LINK4_LENGTH]]
+        print "jOINT  ", dh_table
         final_point = self.rex.rexarm_fk(dh_table)
         final_point[2] = final_point[2] + OFFSET
         print final_point
         self.rex.cmd_publish()
 
-    def drink3(self):
-        self.ui.rdoutStatus.setText("Serve Vodka %d" 
-                                    %(self.video.mouse_click_id + 1))
+    def ik(self):
+        cfg = [LINK1_LENGTH+OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH]
+        pose = [0.27, 0, 0.25, -PI/6]
+        angles = self.rex.rexarm_ik(pose, cfg)
+        self.rex.joint_angles[0] = angles[0]
+        self.rex.joint_angles[1] = angles[1]
+        self.rex.joint_angles[2] = angles[2]
+        self.rex.joint_angles[3] = angles[3]
+        self.rex.cmd_publish()
 
     def drink4(self):
         self.ui.rdoutStatus.setText("Serve Vodka %d" 
