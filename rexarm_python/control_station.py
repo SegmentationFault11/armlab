@@ -257,7 +257,7 @@ class Gui(QtGui.QMainWindow):
 
     def ik(self):
         cfg = [LINK1_LENGTH+OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH]
-        pose = [0.27, 0, 0.25, -PI/6]
+        pose = [0.25093345, 0.00250272, 0.21037353, 0]
         angles = self.rex.rexarm_ik(pose, cfg)
         self.rex.joint_angles[0] = angles[0]
         self.rex.joint_angles[1] = angles[1]
