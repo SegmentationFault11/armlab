@@ -12,6 +12,7 @@ PI = np.pi
 D2R = PI/180.0
 ANGLE_TOL = 2*PI/180.0 
 
+DEBUG = 0 # Change to '1' to print out stuff
 
 """ Rexarm Class """
 class Rexarm():
@@ -19,7 +20,7 @@ class Rexarm():
 
         """ Commanded Values """
         self.num_joints = 6
-        self.joint_angles = [0.0] * self.num_joints # radians
+        self.joint_angles = [0.0] * self.num_joints # radians # FIXME: uncomment
         # you must change this to control each joint speed separately 
         self.speed = 0.5                         # 0 to 1
         self.max_torque = 0.5                    # 0 to 1
@@ -99,39 +100,33 @@ class Rexarm():
             self.joint_angles[2] = -120*D2R
         if self.joint_angles[3] < -120*D2R:
             self.joint_angles[3] = 120*D2R
-        print self.joint_angles[1]
 
     def plan_command(self):
         """ Command planned waypoints """
         pass
 
-    def rexarm_fk(self,dh_table):
-        print dh_table
-        final_point = np.matrix((0,0,0,1))
-        final_point = final_point.transpose()
-        print "dh_table[0][0] "
-        print dh_table[0][0]
+    def rexarm_fk(self, dh_table):
+        final_point = (np.matrix((0,0,0,1))).transpose()
         theta1 = dh_table[0][0]
         theta2 = dh_table[1][0]
-        print "Theta 1", theta1
-        matrix1_1 = np.matrix(((1,0,0,0), (0,0,1,0), (0,1,0,dh_table[0][1]), (0,0,0,1)))
-        matrix1_2 = np.matrix(((math.cos(theta1),0,math.sin(theta1),0), (0,1,0,0), (-math.sin(theta1),0,math.cos(theta1),0), (0,0,0,1)))
-        matrix2 = np.matrix(((math.cos(PI/2+theta2), -math.sin(PI/2+theta2), 0, math.cos(PI/2+theta2)*dh_table[1][1]), (math.sin(PI/2+theta2), math.cos(PI/2+theta2), 0, math.sin(PI/2+theta2)*dh_table[1][1]), (0,0,1,0), (0,0,0,1)))
-        #matrix2 = self.link_fk(dh_table, 1)
+        matrix0 = np.matrix(( (1,0,0,0), (0,0,1,0), (0,1,0,dh_table[0][1]), (0,0,0,1) ))
+        matrix1 = np.matrix(( (math.cos(theta1),0,math.sin(theta1),0), (0,1,0,0), (-math.sin(theta1),0,math.cos(theta1),0), (0,0,0,1) ))
+        matrix2 = np.matrix(( (math.cos(PI/2+theta2), -math.sin(PI/2+theta2), 0, math.cos(PI/2+theta2)*dh_table[1][1]), (math.sin(PI/2+theta2), math.cos(PI/2+theta2), 0, math.sin(PI/2+theta2)*dh_table[1][1]), (0,0,1,0), (0,0,0,1) ))
         matrix3 = self.link_fk(dh_table, 2)
         matrix4 = self.link_fk(dh_table, 3)
-        print "MATRIX1_1 "
-        print matrix1_1
-        print "MATRIX1_2 "
-        print matrix1_2
-        print "MATRIX2 "
-        print matrix2
-        print "first RESULT\n",(np.mat(matrix4) * final_point)
-        print "second RESULT\n",(np.mat(matrix3)*(np.mat(matrix4) * final_point))
-        print "3rd RESULT\n",np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))
-        print "4th RESULT\n",np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point)))
-        print "5th RESULT\n",np.mat(matrix1_1)*(np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))))
-        return (np.mat(matrix1_1)*(np.mat(matrix1_2) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point)))))
+
+        if DEBUG:
+            print "\ndh_table:\n", dh_table        
+            print "\nmatrix0:\n", matrix0
+            print "\nmatrix1\n", matrix1
+            print "\nmatrix2:\n", matrix2
+            print "\n1st result:\n",(np.mat(matrix4) * final_point)
+            print "\n2nd result:\n",(np.mat(matrix3)*(np.mat(matrix4) * final_point))
+            print "\n3rd result:\n",np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))
+            print "\n4th result:\n",np.mat(matrix1) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point)))
+            print "\n5th result:\n",np.mat(matrix0)*(np.mat(matrix1) *(np.mat(matrix2)*(np.mat(matrix3)*(np.mat(matrix4) * final_point))))
+
+        return (np.mat(matrix0) * (np.mat(matrix1) * (np.mat(matrix2) * (np.mat(matrix3) * (np.mat(matrix4) * final_point)))))
  
     def link_fk(self, dh_table, link): 
         """
@@ -141,12 +136,8 @@ class Rexarm():
         returns a 4-tuple (x, y, z, phi) representing the pose of the 
         desired link
         """
-        # link = [index, whether it i]
-        print dh_table[link]
         theta = dh_table[link][0]
         d = dh_table[link][1]
-        print "link ", link, "theta ", theta
-        print theta, math.cos(theta)
         if link == 0:
             return np.array(((math.cos(theta), 0, 0, -math.sin(theta)), (0, 1, 0, 0), (math.sin(theta),0,math.cos(theta),0), (0,0,0,1)))
         else:

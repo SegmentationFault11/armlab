@@ -5,6 +5,7 @@ from time import sleep
 from PyQt4 import QtGui, QtCore, Qt
 from ui import Ui_MainWindow
 from rexarm import Rexarm
+from decimal import *
 
 from video import Video
 
@@ -25,9 +26,9 @@ OFFSET = 7.50 / 100
 LINK1_LENGTH = 4.50 / 100
 LINK2_LENGTH = 10.00 / 100
 LINK3_LENGTH = 10.00 / 100
-LINK4_LENGTH = 7.5 / 100 # holder changed to other number
+LINK4_LENGTH = 10.5 / 100 # TODO: change this to our gripper
 
-
+DEBUG = 0 # Change to '1' to print out stuff
  
 class Gui(QtGui.QMainWindow):
     """ 
@@ -122,6 +123,7 @@ class Gui(QtGui.QMainWindow):
         self.ui.rdoutShoulderJC.setText(str("%.2f" % (self.rex.joint_angles_fb[1]*R2D)))
         self.ui.rdoutElbowJC.setText(str("%.2f" % (self.rex.joint_angles_fb[2]*R2D)))
         self.ui.rdoutWristJC.setText(str("%.2f" % (self.rex.joint_angles_fb[3]*R2D)))
+        self.fk()
 
         """ 
         Mouse position presentation in GUI
@@ -245,14 +247,19 @@ class Gui(QtGui.QMainWindow):
         and updates the status text label 
         """
         self.video.aff_flag = 1 
-        self.ui.rdoutStatus.setText("Serve Vodka %d" 
-                                    %(self.video.mouse_click_id + 1))
+        self.ui.rdoutStatus.setText("Computing Forward Kinematics... " )
 
         dh_table = [[self.rex.joint_angles_fb[0], LINK1_LENGTH], [self.rex.joint_angles_fb[1], LINK2_LENGTH], [self.rex.joint_angles_fb[2], LINK3_LENGTH], [self.rex.joint_angles_fb[3], LINK4_LENGTH]]
-        print "jOINT  ", dh_table
-        final_point = self.rex.rexarm_fk(dh_table)
-        final_point[2] = final_point[2] + OFFSET
-        print final_point
+        end_effector = self.rex.rexarm_fk(dh_table)
+        end_effector[2] = end_effector[2] + OFFSET
+        if DEBUG:
+            print "\nend_effector:\n", end_effector
+
+        self.ui.rdoutX.setText(str(round(end_effector[0,0],2)))
+        self.ui.rdoutY.setText(str(round(end_effector[1,0],2)))
+        self.ui.rdoutZ.setText(str(round(end_effector[2,0],2)))
+        self.ui.rdoutT.setText(str(round(end_effector[3,0],2)))    
+
         self.rex.cmd_publish()
 
     def ik(self):
@@ -270,6 +277,7 @@ class Gui(QtGui.QMainWindow):
                                     %(self.video.mouse_click_id + 1))
  
 def main():
+    print "STARTED\n"
     app = QtGui.QApplication(sys.argv)
     ex = Gui()
     ex.show()
