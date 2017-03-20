@@ -153,6 +153,7 @@ class Rexarm():
         cfg describe elbow down (0) or elbow up (1) configuration
         returns a 4-tuple of joint angles or NONE if configuration is impossible
         """
+        print "________________________________________"
         print "IK: Started"
 
         x_g = pose[0]
@@ -174,7 +175,7 @@ class Rexarm():
             print "L3:", L3
             print "L4:", L4
 
-        theta1 = math.atan2(y_g,x_g)
+        theta1 = -1*math.atan2(y_g,x_g)
         r_g = math.sqrt(x_g*x_g + y_g*y_g)
             
         z_g_prime = z_g + L4*math.sin(phi)
@@ -184,20 +185,25 @@ class Rexarm():
         delta_r = r_g_prime
 
         if IK_DEBUG:
-            print "\ntheta1:", theta1
-            print "r_g:", r_g
-            print "z_g_prime:", z_g_prime
-            print "r_g_prime:", r_g_prime
-            print "delta_z:", delta_z
-            print "delta_r:", delta_r
+            print "\ntheta1:", round(theta1,3)
+            print "r_g:", round(r_g,3)
+            print "z_g_prime:", round(z_g_prime,3)
+            print "r_g_prime:", round(r_g_prime,3)
+            print "delta_z:", round(delta_z,3)
+            print "delta_r:", round(delta_r,3)
 
         cos_theta3 = math.cos( (delta_z*delta_z + delta_r*delta_r - L2*L2 - L3*L3) / (2*L2*L3) )
+        if IK_DEBUG:
+            print "cos_theta3:", round(cos_theta3,3)
         if cos_theta3 > 1 or cos_theta3 < -1:
             print "\nERROR: cos(theta3) lies outside of [-1, 1]\ncos(theta3) =", cos_theta3
         theta3 = math.acos(cos_theta3) - PI/2 # theta3 needs to be in [-PI/2, PI/2]
 
         beta = math.atan2(delta_z, delta_r)
-        psi = math.acos( (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2) )
+        cos_psi = math.cos( (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2) )
+        if cos_psi > 1 or cos_psi < -1:
+            print "\nERROR: cos(psi) lies outside of [-1, 1]\ncos(psi) =", cos_psi
+        psi = math.acos( cos_psi ) - PI/2
         
         if theta3 >= 0:
             theta2 = PI/2 - beta - psi # "Elbow-up" 
@@ -207,13 +213,14 @@ class Rexarm():
         theta4 = phi - theta2 - theta3 + PI/2 
 
         if IK_DEBUG:
-            print "\ntheta3:", theta3
-            print "beta:", beta
-            print "psi:", psi
-            print "theta2:", theta2
-            print "theta4:", theta4
+            print "\ntheta3:", round(theta3,3)
+            print "beta:", round(beta,3)
+            print "psi:", round(psi,3)
+            print "theta2:", round(theta2,3)
+            print "theta4:", round(theta4,3)
 
         print "\nIK: Done"
+        print "________________________________________"
         return [theta1, theta2, theta3, theta4]
 
     def rexarm_collision_check(q):

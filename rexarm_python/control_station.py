@@ -95,8 +95,8 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser3.setText("Inverse Kinemetics")
         self.ui.btnUser3.clicked.connect(self.ik)
 
-        self.ui.btnUser4.setText("Drink4")
-        self.ui.btnUser4.clicked.connect(self.drink4)
+        self.ui.btnUser4.setText("Record End Effector")
+        self.ui.btnUser4.clicked.connect(self.record_end_effector)
 
 
 
@@ -248,7 +248,7 @@ class Gui(QtGui.QMainWindow):
         and updates the status text label 
         """
         self.video.aff_flag = 1 
-        # self.ui.rdoutStatus.setText("Computing Forward Kinematics... " )
+        global end_effector
 
         dh_table = [[self.rex.joint_angles_fb[0], LINK1_LENGTH], [self.rex.joint_angles_fb[1], LINK2_LENGTH], [self.rex.joint_angles_fb[2], LINK3_LENGTH], [self.rex.joint_angles_fb[3], LINK4_LENGTH]]
         end_effector = self.rex.rexarm_fk(dh_table)
@@ -256,26 +256,31 @@ class Gui(QtGui.QMainWindow):
         if FK_DEBUG:
             print "\nend_effector:\n", end_effector
 
-        self.ui.rdoutX.setText(str(round(end_effector[0,0],2)))
-        self.ui.rdoutY.setText(str(round(end_effector[1,0],2)))
-        self.ui.rdoutZ.setText(str(round(end_effector[2,0],2)))
-        self.ui.rdoutT.setText(str(round(end_effector[3,0],2)))    
+        self.ui.rdoutX.setText(str(round(end_effector[0,0],3)))
+        self.ui.rdoutY.setText(str(round(end_effector[1,0],3)))
+        self.ui.rdoutZ.setText(str(round(end_effector[2,0],3)))
+        self.ui.rdoutT.setText(str(round(end_effector[3,0],3)))    
 
         self.rex.cmd_publish()
 
     def ik(self):
-        self.ui.rdoutStatus.setText("Computing Inverse Kinematics... " )
+        self.ui.rdoutStatus.setText("Computing Inverse Kinematics for EE = " + str(end_effector_for_ik) + "...")
 
         cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH] # Lengths of the links
-        ee_pose = [0.25093345, 0.00250272, 0.21037353, 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
+        ee_pose = [end_effector_for_ik[0], end_effector_for_ik[1], end_effector_for_ik[2], 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
         result_angles = self.rex.rexarm_ik(ee_pose, cfg)
 
         if IK_DEBUG:
-            print "\nInverse Kinematics angles:"
-            print "B:", result_angles[0]
-            print "S:", result_angles[1]
-            print "E:", result_angles[2]
-            print "W:", result_angles[3]
+            print "\nExpected angles (in degrees):"
+            print "B:", round(correct_angles_for_ik[0]*R2D, 2)
+            print "S:", round(correct_angles_for_ik[1]*R2D, 2)
+            print "E:", round(correct_angles_for_ik[2]*R2D, 2)
+            print "W:", round(correct_angles_for_ik[3]*R2D, 2)
+            print "\nInverse Kinematics angles (in degrees):"
+            print "B:", round(result_angles[0]*R2D, 2)
+            print "S:", round(result_angles[1]*R2D, 2)
+            print "E:", round(result_angles[2]*R2D, 2)
+            print "W:", round(result_angles[3]*R2D, 2)
 
         self.rex.joint_angles[0] = result_angles[0]
         self.rex.joint_angles[1] = result_angles[1]
@@ -284,9 +289,12 @@ class Gui(QtGui.QMainWindow):
 
         self.rex.cmd_publish()
 
-    def drink4(self):
-        self.ui.rdoutStatus.setText("Serve Vodka %d" 
-                                    %(self.video.mouse_click_id + 1))
+    def record_end_effector(self):
+        global end_effector_for_ik, correct_angles_for_ik
+        end_effector_for_ik = [round(end_effector[0,0],3), round(end_effector[1,0],3), round(end_effector[2,0],3), round(end_effector[3,0],3)]
+        correct_angles_for_ik = [self.rex.joint_angles_fb[0], self.rex.joint_angles_fb[1], self.rex.joint_angles_fb[2], self.rex.joint_angles_fb[3]]
+
+        self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))
  
 def main():
     print "STARTED\n"
