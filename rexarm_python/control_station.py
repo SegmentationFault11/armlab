@@ -28,7 +28,8 @@ LINK2_LENGTH = 10.00 / 100
 LINK3_LENGTH = 10.00 / 100
 LINK4_LENGTH = 10.5 / 100 # TODO: change this to our gripper
 
-DEBUG = 0 # Change to '1' to print out stuff
+FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
+IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
  
 class Gui(QtGui.QMainWindow):
     """ 
@@ -247,12 +248,12 @@ class Gui(QtGui.QMainWindow):
         and updates the status text label 
         """
         self.video.aff_flag = 1 
-        self.ui.rdoutStatus.setText("Computing Forward Kinematics... " )
+        # self.ui.rdoutStatus.setText("Computing Forward Kinematics... " )
 
         dh_table = [[self.rex.joint_angles_fb[0], LINK1_LENGTH], [self.rex.joint_angles_fb[1], LINK2_LENGTH], [self.rex.joint_angles_fb[2], LINK3_LENGTH], [self.rex.joint_angles_fb[3], LINK4_LENGTH]]
         end_effector = self.rex.rexarm_fk(dh_table)
         end_effector[2] = end_effector[2] + OFFSET
-        if DEBUG:
+        if FK_DEBUG:
             print "\nend_effector:\n", end_effector
 
         self.ui.rdoutX.setText(str(round(end_effector[0,0],2)))
@@ -263,13 +264,24 @@ class Gui(QtGui.QMainWindow):
         self.rex.cmd_publish()
 
     def ik(self):
-        cfg = [LINK1_LENGTH+OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH]
-        pose = [0.25093345, 0.00250272, 0.21037353, 0]
-        angles = self.rex.rexarm_ik(pose, cfg)
-        self.rex.joint_angles[0] = angles[0]
-        self.rex.joint_angles[1] = angles[1]
-        self.rex.joint_angles[2] = angles[2]
-        self.rex.joint_angles[3] = angles[3]
+        self.ui.rdoutStatus.setText("Computing Inverse Kinematics... " )
+
+        cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH] # Lengths of the links
+        ee_pose = [0.25093345, 0.00250272, 0.21037353, 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
+        result_angles = self.rex.rexarm_ik(ee_pose, cfg)
+
+        if IK_DEBUG:
+            print "\nInverse Kinematics angles:"
+            print "B:", result_angles[0]
+            print "S:", result_angles[1]
+            print "E:", result_angles[2]
+            print "W:", result_angles[3]
+
+        self.rex.joint_angles[0] = result_angles[0]
+        self.rex.joint_angles[1] = result_angles[1]
+        self.rex.joint_angles[2] = result_angles[2]
+        self.rex.joint_angles[3] = result_angles[3]
+
         self.rex.cmd_publish()
 
     def drink4(self):
