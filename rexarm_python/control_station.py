@@ -98,8 +98,7 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser4.setText("Record End Effector")
         self.ui.btnUser4.clicked.connect(self.record_end_effector)
 
-
-
+    
     def play(self):
         """ 
         Play Funtion
@@ -282,16 +281,34 @@ class Gui(QtGui.QMainWindow):
             print "E:", round(result_angles[2]*R2D, 2)
             print "W:", round(result_angles[3]*R2D, 2)
 
-        self.rex.joint_angles[0] = result_angles[0]
-        self.rex.joint_angles[1] = result_angles[1]
-        self.rex.joint_angles[2] = result_angles[2]
-        self.rex.joint_angles[3] = result_angles[3]
+        dh_table_correct = [[correct_angles_for_ik[0], LINK1_LENGTH], [correct_angles_for_ik[1], LINK2_LENGTH], [correct_angles_for_ik[2], LINK3_LENGTH], [correct_angles_for_ik[3], LINK4_LENGTH]]
+        fk_correct = self.rex.rexarm_fk(dh_table_correct)
+        fk_correct[2] = fk_correct[2] + OFFSET
 
-        self.rex.cmd_publish()
+        dh_table_ik = [[result_angles[0], LINK1_LENGTH], [result_angles[1], LINK2_LENGTH], [result_angles[2], LINK3_LENGTH], [result_angles[3], LINK4_LENGTH]]
+        fk_ik = self.rex.rexarm_fk(dh_table_ik)
+        fk_ik[2] = fk_ik[2] + OFFSET
+
+        if IK_DEBUG:
+            print "\nExpected End Effector:"
+            print "X:", round(fk_correct[0,0],3)
+            print "Y:", round(fk_correct[1,0],3)
+            print "Z:", round(fk_correct[2,0],3)
+            print "\nActual End Effector:"
+            print "X:", round(fk_ik[0,0],3)
+            print "Y:", round(fk_ik[1,0],3)
+            print "Z:", round(fk_ik[2,0],3)
+        
+        # self.rex.joint_angles[0] = result_angles[0]
+        # self.rex.joint_angles[1] = result_angles[1]
+        # self.rex.joint_angles[2] = result_angles[2]
+        # self.rex.joint_angles[3] = result_angles[3]
+
+        # self.rex.cmd_publish()
 
     def record_end_effector(self):
         global end_effector_for_ik, correct_angles_for_ik
-        end_effector_for_ik = [round(end_effector[0,0],3), round(end_effector[1,0],3), round(end_effector[2,0],3), round(end_effector[3,0],3)]
+        end_effector_for_ik = [end_effector[0,0], end_effector[1,0], end_effector[2,0], end_effector[3,0]]
         correct_angles_for_ik = [self.rex.joint_angles_fb[0], self.rex.joint_angles_fb[1], self.rex.joint_angles_fb[2], self.rex.joint_angles_fb[3]]
 
         self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))

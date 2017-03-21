@@ -118,7 +118,7 @@ class Rexarm():
         final_point = (np.matrix((0,0,0,1))).transpose()
         theta1 = dh_table[0][0]
         theta2 = dh_table[1][0]
-        matrix0 = np.matrix(( (1,0,0,0), (0,0,1,0), (0,1,0,dh_table[0][1]), (0,0,0,1) ))
+        matrix0 = np.matrix(( (1,0,0,0), (0,0,-1,0), (0,1,0,dh_table[0][1]), (0,0,0,1) ))
         matrix1 = np.matrix(( (math.cos(theta1),0,math.sin(theta1),0), (0,1,0,0), (-math.sin(theta1),0,math.cos(theta1),0), (0,0,0,1) ))
         matrix2 = np.matrix(( (math.cos(PI/2+theta2), -math.sin(PI/2+theta2), 0, math.cos(PI/2+theta2)*dh_table[1][1]), (math.sin(PI/2+theta2), math.cos(PI/2+theta2), 0, math.sin(PI/2+theta2)*dh_table[1][1]), (0,0,1,0), (0,0,0,1) ))
         matrix3 = self.link_fk(dh_table, 2)
@@ -175,7 +175,7 @@ class Rexarm():
             print "L3:", L3
             print "L4:", L4
 
-        theta1 = -1*math.atan2(y_g,x_g)
+        theta1 = math.atan2(y_g,x_g)
         r_g = math.sqrt(x_g*x_g + y_g*y_g)
             
         z_g_prime = z_g + L4*math.sin(phi)
@@ -192,17 +192,28 @@ class Rexarm():
             print "delta_z:", round(delta_z,3)
             print "delta_r:", round(delta_r,3)
 
-        cos_theta3 = math.cos( (delta_z*delta_z + delta_r*delta_r - L2*L2 - L3*L3) / (2*L2*L3) )
-        if IK_DEBUG:
-            print "cos_theta3:", round(cos_theta3,3)
+        cos_theta3 = (delta_z*delta_z + delta_r*delta_r - L2*L2 - L3*L3) / (2*L2*L3)
         if cos_theta3 > 1 or cos_theta3 < -1:
             print "\nERROR: cos(theta3) lies outside of [-1, 1]\ncos(theta3) =", cos_theta3
-        theta3 = math.acos(cos_theta3) - PI/2 # theta3 needs to be in [-PI/2, PI/2]
+            if cos_theta3  < 1.04:
+                cos_theta3 = 1.0
+            if cos_theta3  > -1.04:
+                cos_theta3 = -1.0
+
+        theta3 = math.acos(cos_theta3)
+        if IK_DEBUG:
+            print "cos_theta3:", round(cos_theta3,3)
+            print "theta3 (before shift):", round(theta3,3)
+        theta3 = theta3 - PI/2 # theta3 needs to be in [-PI/2, PI/2]
 
         beta = math.atan2(delta_z, delta_r)
-        cos_psi = math.cos( (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2) )
+        cos_psi = (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2)
         if cos_psi > 1 or cos_psi < -1:
             print "\nERROR: cos(psi) lies outside of [-1, 1]\ncos(psi) =", cos_psi
+            if cos_psi  < 1.04:
+                cos_psi = 1.0
+            if cos_psi  > -1.04:
+                cos_psi = -1.0
         psi = math.acos( cos_psi ) - PI/2
         
         if theta3 >= 0:
