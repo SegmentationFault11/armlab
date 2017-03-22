@@ -234,6 +234,53 @@ class Rexarm():
         print "________________________________________"
         return [theta1, theta2, theta3, theta4]
 
+    def rexarm_ik_kuipers(self, pose, cfg):
+        print "________________________________________"
+        print "IK: Started"        
+
+        x = pose[0]
+        y = pose[1]
+        h = pose[2]
+        phi = pose[3]
+        d1 = cfg[0]
+        d2 = cfg[1]
+        d3 = cfg[2]
+        d4 = cfg[3]
+
+        if IK_DEBUG:
+            print "\nx:", x
+            print "y:", y
+            print "h:", h
+            print "phi:", phi
+            print "d1:", d1
+            print "d2:", d2
+            print "d3:", d3
+            print "d4:", d4
+
+        theta1 = math.atan2(y,x)
+        R = math.sqrt(x*x + y*y)
+        M = math.sqrt( R*R + (d4 + h - d1)*(d4 + h - d1) )
+        alpha = math.atan2(d4 + h - d1, R)
+        cos_beta = (-1*d3*d3 + d2*d2 + M*M) / (2*d2*M)
+
+        if IK_DEBUG:
+            print "\ntheta1:", theta1
+            print "R:", R
+            print "M:", M
+            print "alpha:", alpha
+            print "cos_beta:", cos_beta
+
+        beta = math.acos( cos_beta )
+        gamma = math.acos( (-1*M*M + d2*d2 + d3*d3) / (2*d2*d3) )
+
+        theta2 = PI/2 - alpha - beta
+        theta3 = PI - gamma
+        theta4 = PI - theta2 - theta3
+
+        print "\nIK: Done"
+        print "________________________________________"
+        return [theta1, theta2, theta3, theta4]
+
     def rexarm_collision_check(q):
         """
         Perform a collision check with the ground and the base
