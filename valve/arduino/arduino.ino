@@ -1,5 +1,9 @@
 void setup() {
   Serial.begin(9600);
+   pinMode(8, OUTPUT);
+   pinMode(9, OUTPUT);
+   pinMode(10, OUTPUT);
+   pinMode(11, OUTPUT);
 }
 
 void loop() {
@@ -7,21 +11,21 @@ void loop() {
   if (Serial.available()) {
     char c = Serial.read();
     if (c == '1') {
-      analogWrite(8, 1023);
+      digitalWrite(8, HIGH);
     } else if (c == '2') {
-      analogWrite(8, 0);
+      digitalWrite(8, LOW);
     } else if (c == '3') {
-      analogWrite(9, 1023);
+      digitalWrite(9, HIGH);
     } else if (c == '4') {
-      analogWrite(9, 0);
+      digitalWrite(9, LOW);
     } else if (c == '5') {
-      analogWrite(10, 1023);
+      digitalWrite(10, HIGH);
     } else if (c == '6') {
-      analogWrite(10, 0);
+      digitalWrite(10, LOW);
     } else if (c == '7') {
-      analogWrite(11, 1023);
+      digitalWrite(11, HIGH);
     } else if (c == '8') {
-      analogWrite(11, 0);
+      digitalWrite(11, LOW);
     }
   }
 }
