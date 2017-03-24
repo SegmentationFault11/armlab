@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+	<div class="page-header">
+		<h1><center>Welcome to Robot-Barman!</center></h1>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-4" style="background-color: #FF9999"><h4><center>Check</center><h4></div>
+		<div class="col-md-4" style="background-color: #F2F5A9"><h4><center>Add</center><h4></div>
+		<div class="col-md-4" style="background-color: #99CCFF"><h4><center>Request</center><h4></div>
+	</div>
+
+	<br>
+
+	{% if not session['logged_in'] %}
+		<div class="row">
+			<p class="lead">Please sign up or log in to start. </p>
+		</div>
+	{% else %}
+		<div class="row">
+			<p class="lead">Click "Check," Add," or "Request" above. </p>
+		</div>		
+	{% endif %}
+</div>
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-1"></div>
+		<div class="col-md-10" style="background-color: #B8D192">
+			<h4><center>Robot-Barman: Robot to Server You Drinks</center></h4>
+			<p>Robot-Barman: description...</p>
+		</div>
+		<div class="col-md-1"></div>
+	</div>
+</div>
+
+<br>
+{% endblock %}

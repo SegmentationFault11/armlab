@@ -1,0 +1,11 @@
+.project
+.pydevproject
+.settings
+gen-py
+venv
+*.pyc
+config
+.DS_STORE
+inputs
+models
+
