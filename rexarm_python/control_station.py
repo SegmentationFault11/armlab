@@ -120,7 +120,7 @@ class Gui(QtGui.QMainWindow):
         LAB TASK: include the other slider labels 
         """
         self.ui.rdoutBaseJC.setText(str("%.2f" % (self.rex.joint_angles_fb[0]*R2D)))
-        self.ui.rdoutShoulderJC.setText(str("%.2f" % (self.rex.joint_angles_fb[1]*R2D)))
+        self.ui.rdoutShoulderJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[1]*R2D)))
         self.ui.rdoutElbowJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[2]*R2D)))
         self.ui.rdoutWristJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[3]*R2D)))
         self.fk()
@@ -161,7 +161,7 @@ class Gui(QtGui.QMainWindow):
         Implement for the other sliders
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
-        self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
+        self.ui.rdoutShoulder.setText(str(-1*self.ui.sldrShoulder.value()))
         self.ui.rdoutElbow.setText(str(-1*self.ui.sldrElbow.value()))
         self.ui.rdoutWrist.setText(str(-1*self.ui.sldrWrist.value()))
 
@@ -292,22 +292,22 @@ class Gui(QtGui.QMainWindow):
         fk_correct = self.rex.rexarm_fk(dh_table_correct)
         fk_correct[2] = fk_correct[2] + OFFSET
 
-        dh_table_ik = [[result_angles[0], LINK1_LENGTH], [result_angles[1], LINK2_LENGTH], [result_angles[2], LINK3_LENGTH], [result_angles[3], LINK4_LENGTH]]
+        dh_table_ik = [[result_angles[0], LINK1_LENGTH], [-1*result_angles[1], LINK2_LENGTH], [-1*result_angles[2], LINK3_LENGTH], [-1*result_angles[3], LINK4_LENGTH]]
         fk_ik = self.rex.rexarm_fk(dh_table_ik)
         fk_ik[2] = fk_ik[2] + OFFSET
 
         if IK_DEBUG:
             print "\nExpected End Effector:"
-            print "X:", round(end_effector_for_ik[0],3)
-            print "Y:", round(end_effector_for_ik[1],3)
-            print "Z:", round(end_effector_for_ik[2],3)
+            print "X:", round(fk_correct[0,0],3)
+            print "Y:", round(fk_correct[1,0],3)
+            print "Z:", round(fk_correct[2,0],3)
             print "\nActual End Effector:"
             print "X:", round(fk_ik[0,0],3)
             print "Y:", round(fk_ik[1,0],3)
             print "Z:", round(fk_ik[2,0],3)
         
         self.rex.joint_angles[0] = result_angles[0]
-        self.rex.joint_angles[1] = result_angles[1]
+        self.rex.joint_angles[1] = -1*result_angles[1]
         self.rex.joint_angles[2] = -1*result_angles[2]
         self.rex.joint_angles[3] = -1*result_angles[3]
 
