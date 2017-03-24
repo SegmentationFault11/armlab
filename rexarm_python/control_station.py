@@ -26,7 +26,7 @@ OFFSET = 7.50 / 100
 LINK1_LENGTH = 4.50 / 100
 LINK2_LENGTH = 10.00 / 100
 LINK3_LENGTH = 10.00 / 100
-LINK4_LENGTH = 10.5 / 100 # TODO: change this to our gripper
+LINK4_LENGTH = 7.5 / 100 # TODO: change this to our gripper
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
 IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
@@ -121,8 +121,8 @@ class Gui(QtGui.QMainWindow):
         """
         self.ui.rdoutBaseJC.setText(str("%.2f" % (self.rex.joint_angles_fb[0]*R2D)))
         self.ui.rdoutShoulderJC.setText(str("%.2f" % (self.rex.joint_angles_fb[1]*R2D)))
-        self.ui.rdoutElbowJC.setText(str("%.2f" % (self.rex.joint_angles_fb[2]*R2D)))
-        self.ui.rdoutWristJC.setText(str("%.2f" % (self.rex.joint_angles_fb[3]*R2D)))
+        self.ui.rdoutElbowJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[2]*R2D)))
+        self.ui.rdoutWristJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[3]*R2D)))
         self.fk()
 
         """ 
@@ -162,8 +162,8 @@ class Gui(QtGui.QMainWindow):
         """
         self.ui.rdoutBase.setText(str(self.ui.sldrBase.value()))
         self.ui.rdoutShoulder.setText(str(self.ui.sldrShoulder.value()))
-        self.ui.rdoutElbow.setText(str(self.ui.sldrElbow.value()))
-        self.ui.rdoutWrist.setText(str(self.ui.sldrWrist.value()))
+        self.ui.rdoutElbow.setText(str(-1*self.ui.sldrElbow.value()))
+        self.ui.rdoutWrist.setText(str(-1*self.ui.sldrWrist.value()))
 
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
@@ -265,6 +265,13 @@ class Gui(QtGui.QMainWindow):
     def ik(self):
         self.ui.rdoutStatus.setText("Computing Inverse Kinematics for EE = " + str(end_effector_for_ik) + "...")
 
+        if IK_DEBUG:
+            print "\nExpected angles (in degrees):"
+            print "B:", round(correct_angles_for_ik[0]*R2D, 2)
+            print "S:", round(correct_angles_for_ik[1]*R2D, 2)
+            print "E:", round(correct_angles_for_ik[2]*R2D, 2)
+            print "W:", round(correct_angles_for_ik[3]*R2D, 2)
+
         cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Lengths of the links
         ee_pose = [end_effector_for_ik[0], end_effector_for_ik[1], end_effector_for_ik[2], 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
         result_angles = self.rex.rexarm_ik(ee_pose, cfg)
@@ -291,9 +298,9 @@ class Gui(QtGui.QMainWindow):
 
         if IK_DEBUG:
             print "\nExpected End Effector:"
-            print "X:", round(fk_correct[0,0],3)
-            print "Y:", round(fk_correct[1,0],3)
-            print "Z:", round(fk_correct[2,0],3)
+            print "X:", round(end_effector_for_ik[0],3)
+            print "Y:", round(end_effector_for_ik[1],3)
+            print "Z:", round(end_effector_for_ik[2],3)
             print "\nActual End Effector:"
             print "X:", round(fk_ik[0,0],3)
             print "Y:", round(fk_ik[1,0],3)
@@ -301,8 +308,8 @@ class Gui(QtGui.QMainWindow):
         
         self.rex.joint_angles[0] = result_angles[0]
         self.rex.joint_angles[1] = result_angles[1]
-        self.rex.joint_angles[2] = result_angles[2]
-        self.rex.joint_angles[3] = result_angles[3]
+        self.rex.joint_angles[2] = -1*result_angles[2]
+        self.rex.joint_angles[3] = -1*result_angles[3]
 
         self.rex.cmd_publish()
 

@@ -156,8 +156,8 @@ class Rexarm():
         print "________________________________________"
         print "IK: Started"
 
-        x_g = -1*pose[0]
-        y_g = -1*pose[1]
+        x_g = pose[0]
+        y_g = pose[1]
         z_g = pose[2]
         phi = pose[3]
         L1 = cfg[0]
