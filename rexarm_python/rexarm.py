@@ -156,14 +156,15 @@ class Rexarm():
         print "________________________________________"
         print "IK: Started"
 
-        x_g = pose[0]
-        y_g = pose[1]
+        x_g = -1*pose[0]
+        y_g = -1*pose[1]
         z_g = pose[2]
         phi = pose[3]
         L1 = cfg[0]
         L2 = cfg[1]
         L3 = cfg[2]
         L4 = cfg[3]
+        elbow = cfg[4]
 
         if IK_DEBUG:
             print "\nx_g:", x_g
@@ -195,36 +196,28 @@ class Rexarm():
         cos_theta3 = (delta_z*delta_z + delta_r*delta_r - L2*L2 - L3*L3) / (2*L2*L3)
         if cos_theta3 > 1 or cos_theta3 < -1:
             print "\nERROR: cos(theta3) lies outside of [-1, 1]\ncos(theta3) =", cos_theta3
-            if cos_theta3  < 1.04:
-                cos_theta3 = 1.0
-            if cos_theta3  > -1.04:
-                cos_theta3 = -1.0
 
         theta3 = math.acos(cos_theta3)
+        if elbow == 0:
+            theta3 = -1*theta3 # 'Elbow-down' 
         if IK_DEBUG:
             print "cos_theta3:", round(cos_theta3,3)
-            print "theta3 (before shift):", round(theta3,3)
-        theta3 = theta3 - PI/2 # theta3 needs to be in [-PI/2, PI/2]
+            print "\ntheta3:", round(theta3,3)
 
         beta = math.atan2(delta_z, delta_r)
         cos_psi = (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2)
         if cos_psi > 1 or cos_psi < -1:
             print "\nERROR: cos(psi) lies outside of [-1, 1]\ncos(psi) =", cos_psi
-            if cos_psi  < 1.04:
-                cos_psi = 1.0
-            if cos_psi  > -1.04:
-                cos_psi = -1.0
-        psi = math.acos( cos_psi ) - PI/2
+        psi = math.acos( cos_psi )
         
-        if theta3 >= 0:
+        if elbow:
             theta2 = PI/2 - beta - psi # "Elbow-up" 
         else:
-            theta2 = PI/2 - beta + psi # "Elbow-down"
+            theta2 = PI/2 - beta + psi # "Elbow-down": that's what we want
 
         theta4 = phi - theta2 - theta3 + PI/2 
 
         if IK_DEBUG:
-            print "\ntheta3:", round(theta3,3)
             print "beta:", round(beta,3)
             print "psi:", round(psi,3)
             print "theta2:", round(theta2,3)

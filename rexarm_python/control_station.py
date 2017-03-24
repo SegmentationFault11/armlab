@@ -265,9 +265,9 @@ class Gui(QtGui.QMainWindow):
     def ik(self):
         self.ui.rdoutStatus.setText("Computing Inverse Kinematics for EE = " + str(end_effector_for_ik) + "...")
 
-        cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH] # Lengths of the links
+        cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Lengths of the links
         ee_pose = [end_effector_for_ik[0], end_effector_for_ik[1], end_effector_for_ik[2], 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
-        result_angles = self.rex.rexarm_ik_kuipers(ee_pose, cfg)
+        result_angles = self.rex.rexarm_ik(ee_pose, cfg)
 
         if IK_DEBUG:
             print "\nExpected angles (in degrees):"
@@ -299,12 +299,12 @@ class Gui(QtGui.QMainWindow):
             print "Y:", round(fk_ik[1,0],3)
             print "Z:", round(fk_ik[2,0],3)
         
-        # self.rex.joint_angles[0] = result_angles[0]
-        # self.rex.joint_angles[1] = result_angles[1]
-        # self.rex.joint_angles[2] = result_angles[2]
-        # self.rex.joint_angles[3] = result_angles[3]
+        self.rex.joint_angles[0] = result_angles[0]
+        self.rex.joint_angles[1] = result_angles[1]
+        self.rex.joint_angles[2] = result_angles[2]
+        self.rex.joint_angles[3] = result_angles[3]
 
-        # self.rex.cmd_publish()
+        self.rex.cmd_publish()
 
     def record_end_effector(self):
         global end_effector_for_ik, correct_angles_for_ik
