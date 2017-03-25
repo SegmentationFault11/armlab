@@ -26,10 +26,24 @@ OFFSET = 7.50 / 100
 LINK1_LENGTH = 4.50 / 100
 LINK2_LENGTH = 10.00 / 100
 LINK3_LENGTH = 10.00 / 100
-LINK4_LENGTH = 7.5 / 100 # TODO: change this to our gripper
+LINK4_LENGTH = 7 / 100 # TODO: change this to our gripper
+cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Lengths of the links
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
 IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
+
+FINAL_END_EFFECTORS = [
+    [0.10125143894897511, -0.12094915633605999, 0.23777505667133353, -0.15],
+    [0.021227449684100921, -0.16329518003527718, 0.23061180478670984, -0.15],
+    [-0.070747536793389756, -0.14850850805866353, 0.2308643354414559, -0.15],
+    [-0.13855895338992918, -0.088664577840474698, 0.2308643354414559, -0.15],
+    [-0.16497080154134619, 0.00050624926499197244, 0.23026481303086488, -0.15],
+    [-0.14187864044490325, 0.084178815832835346, 0.23026481303086488, -0.15],
+    [-0.072391107920756079, 0.14014306904605794, 0.23777505667133353, -0.15],
+    [0.012632140474910281, 0.15722907280355261, 0.23777505667133353, -0.15],
+    [0.093447433342095709, 0.12707529071151988, 0.23777505667133353, -0.15],
+    [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15] # HOME
+]
  
 class Gui(QtGui.QMainWindow):
     """ 
@@ -86,18 +100,41 @@ class Gui(QtGui.QMainWindow):
         """ Connect Buttons to Functions 
         LAB TASK: NAME AND CONNECT BUTTONS AS NEEDED
         """
-        self.ui.btnUser1.setText("Affine Calibration")
-        self.ui.btnUser1.clicked.connect(self.affine_cal)
+        self.ui.btnUser1.setText("Inverse Kinemetics")
+        self.ui.btnUser1.clicked.connect(self.ik)
 
-        self.ui.btnUser2.setText("Forward Kinematics")
-        self.ui.btnUser2.clicked.connect(self.fk)
+        self.ui.btnUser2.setText("Record End Effector")
+        self.ui.btnUser2.clicked.connect(self.record_end_effector)
 
-        self.ui.btnUser3.setText("Inverse Kinemetics")
-        self.ui.btnUser3.clicked.connect(self.ik)
+        self.ui.btnUser3.setText("Home")
+        self.ui.btnUser3.clicked.connect(self.driveToHome)
 
-        self.ui.btnUser4.setText("Record End Effector")
-        self.ui.btnUser4.clicked.connect(self.record_end_effector)
+        self.ui.btnUser4.setText("Bottle 1")
+        self.ui.btnUser4.clicked.connect(self.driveToBottle0)
 
+        self.ui.btnUser5.setText("Bottle 2")
+        self.ui.btnUser5.clicked.connect(self.driveToBottle1)
+
+        self.ui.btnUser6.setText("Bottle 3")
+        self.ui.btnUser6.clicked.connect(self.driveToBottle2)
+
+        self.ui.btnUser7.setText("Bottle 4")
+        self.ui.btnUser7.clicked.connect(self.driveToBottle3)
+
+        self.ui.btnUser8.setText("Bottle 5")
+        self.ui.btnUser8.clicked.connect(self.driveToBottle4)
+
+        self.ui.btnUser9.setText("Bottle 6")
+        self.ui.btnUser9.clicked.connect(self.driveToBottle5)
+
+        self.ui.btnUser10.setText("Bottle 7")
+        self.ui.btnUser10.clicked.connect(self.driveToBottle6)
+
+        self.ui.btnUser11.setText("Bottle 8")
+        self.ui.btnUser11.clicked.connect(self.driveToBottle7)
+
+        self.ui.btnUser12.setText("Bottle 9")
+        self.ui.btnUser12.clicked.connect(self.driveToBottle8)
     
     def play(self):
         """ 
@@ -272,8 +309,7 @@ class Gui(QtGui.QMainWindow):
             print "E:", round(correct_angles_for_ik[2]*R2D, 2)
             print "W:", round(correct_angles_for_ik[3]*R2D, 2)
 
-        cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Lengths of the links
-        ee_pose = [end_effector_for_ik[0], end_effector_for_ik[1], end_effector_for_ik[2], 0] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
+        ee_pose = [end_effector_for_ik[0], end_effector_for_ik[1], end_effector_for_ik[2], -0.15] # [EE-x_g, EE-y_g, EE-z_g, EE-orientation], where EE is End Effector goal position
         result_angles = self.rex.rexarm_ik(ee_pose, cfg)
 
         if IK_DEBUG:
@@ -318,8 +354,50 @@ class Gui(QtGui.QMainWindow):
         end_effector_for_ik = [end_effector[0,0], end_effector[1,0], end_effector[2,0], end_effector[3,0]]
         correct_angles_for_ik = [self.rex.joint_angles_fb[0], self.rex.joint_angles_fb[1], self.rex.joint_angles_fb[2], self.rex.joint_angles_fb[3]]
 
+        if IK_DEBUG:
+            print "End Effector:", str(end_effector_for_ik)
         self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))
- 
+
+    def driveToBottle0(self):   
+        self.driveToBottle(0)
+
+    def driveToBottle1(self):   
+        self.driveToBottle(1)
+
+    def driveToBottle2(self):   
+        self.driveToBottle(2)
+        
+    def driveToBottle3(self):   
+        self.driveToBottle(3)
+        
+    def driveToBottle4(self):   
+        self.driveToBottle(4)
+
+    def driveToBottle5(self):   
+        self.driveToBottle(5)
+        
+    def driveToBottle6(self):   
+        self.driveToBottle(6)
+        
+    def driveToBottle7(self):   
+        self.driveToBottle(7)
+
+    def driveToBottle8(self):   
+        self.driveToBottle(8)   
+
+    def driveToHome(self):   
+        self.driveToBottle(9)                     
+
+    def driveToBottle(self, index_of_ee):
+        result_angles = self.rex.rexarm_ik(FINAL_END_EFFECTORS[index_of_ee], cfg)
+
+        self.rex.joint_angles[0] = result_angles[0]
+        self.rex.joint_angles[1] = -1*result_angles[1]
+        self.rex.joint_angles[2] = -1*result_angles[2]
+        self.rex.joint_angles[3] = -1*result_angles[3]
+
+        self.rex.cmd_publish()
+
 def main():
     print "STARTED\n"
     app = QtGui.QApplication(sys.argv)
