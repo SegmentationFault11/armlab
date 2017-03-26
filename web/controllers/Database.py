@@ -15,26 +15,16 @@ class Database(object):
 		mongodb_addr = os.environ.get('MONGO_PORT_27017_TCP_ADDR')
 		if mongodb_addr:
 			log('MongoDB: ' + mongodb_addr)
-			self.db = MongoClient(mongodb_addr, 27017).lucida
+			self.db = MongoClient(mongodb_addr, 27017).barman
 		else:
 			log('MongoDB: localhost')
-			self.db = MongoClient().lucida
+			self.db = MongoClient().barman
 		self.users = self.db.users
-	
-	# Returns the image collection of the user.
-	def get_image_collection(self, username):
-		images_collection = 'images_' + username
-		return self.db[images_collection]
-	
-	# Returns the text collection of the user.
-	def get_text_collection(self, username):
-		text_collection = 'text_' + username
-		return self.db[text_collection]
 	
 	# Adds a new user.
 	def add_user(self, username, firstname, lastname, password, email):
 		salt = uuid.uuid4().hex # thwart rainbow attack
-		hashed_password = self.hash_password(self.ENCRYPT_ALGORITHM,
+		hashed_password = self.hash_password(self.ENCRYPT_ALGORITHM, \
 			salt, password)
 		self.users.insert_one({'username' : username,
 			'firstname': firstname, 'lastname': lastname,
@@ -45,7 +35,7 @@ class Database(object):
 		correct_password_in_db = (self.users.find_one
 			({'username': username}))['password']
 		salt = correct_password_in_db.split('$')[1]
-		generated_password = self.hash_password(self.ENCRYPT_ALGORITHM,
+		generated_password = self.hash_password(self.ENCRYPT_ALGORITHM, \
 			salt, input_password)
 		return correct_password_in_db == generated_password
 	
@@ -58,60 +48,33 @@ class Database(object):
 		password_hash = m.hexdigest()
 		return "$".join([algorithm, salt, password_hash])
 	
-	#Returns true if the username already exists.
+	# Returns true if the username already exists.
 	def username_exists(self, username):
 		return not self.users.find_one({'username': username}) is None
 	
-	# Adds the uploaded image.
-	def add_image(self, username, image_data, label, image_id):
-		self.get_image_collection(username).insert_one(
-			{'label': label, 'data': b64encode(image_data), # encoded
-			 'image_id': image_id})
+	# Adds the recipe.
+	def add_recipe(self, username, drinkname, ingredients):
+		self.get_recipe_collection(username).insert_one( \
+			{'drinkname': drinkname, 'ingredients': ingredients})
+
+	# Returns true if the recipe already exists.
+	def recipe_exists(self, username, drinkname):
+		return not self.get_recipe_collection(username).find_one( \
+			{'drinkname': drinkname}) is None
 		
-	# Deletes the specified image.
-	def delete_image(self, username, image_id):
-		self.get_image_collection(username).remove({'image_id': image_id})
+	# Deletes the recipe.
+	def delete_recipe(self, username, drinkname):
+		self.get_recipe_collection(username).delete_one( \
+			{'drinkname': drinkname})
 		
-	# Returns all the images by username.
-	def get_images(self, username):
-		log('Retrieving all images from images_' + username)
-		# Notice image['data'] was encoded using Base64.
-		return [image for image in self.get_image_collection(username).find()]
-	
-	# Checks whether the user can add one more image.
-	def check_add_image(self, username):
-		if self.get_image_collection(username).count() >= \
-			Config.MAX_DOC_NUM_PER_USER:
-			raise RuntimeError('Sorry. You can only add ' + 
-				str(Config.MAX_DOC_NUM_PER_USER) + \
-				' images at most')
-	# Returns the number of images by username.
-	def count_images(self, username):
-		log('Retrieving the number of images from images_' + username)
-		return self.get_image_collection(username).count()
-	
-	# Adds the knowledge text.
-	def add_text(self, username, text_type, text_data, text_id):
-		self.get_text_collection(username).insert_one(
-			{'type': text_type, 'text_data': text_data,
-			 'text_id': text_id})
-		
-	# Deletes the knowledge text.
-	def delete_text(self, username, text_id):
-		self.get_text_collection(username).delete_one(
-			{'text_id': text_id})
-		
-	# Returns the knowledge text by username.
-	def get_text(self, username):
-		log('Retrieving text from text_' + username)
-		return [text for text in self.get_text_collection(username).find()]
-	
-	# Checks whether the user can add one more piece of text.
-	def check_add_text(self, username):
-		if self.get_text_collection(username).count() >= \
-			Config.MAX_DOC_NUM_PER_USER:
-			raise RuntimeError('Sorry. You can only add ' + 
-				str(Config.MAX_DOC_NUM_PER_USER) + \
-				' pieces of text at most')
+	# Returns all the recipes.
+	def get_recipes(self, username):
+		log('Retrieving recipes from recipe_' + username)
+		return [recipe for recipe in self.get_recipe_collection(username).find()]
+
+	# Returns the recipe collection of the user.
+	def get_recipe_collection(self, username):
+		recipe_collection = 'recipe_' + username
+		return self.db[recipe_collection]
 
 database = Database()

@@ -1,7 +1,7 @@
 from flask import *
 from AccessManagement import login_required
 from LcmClient import lcm_client
-from Utilities import log, check_image_extension
+from Utilities import log
 import os
 
 infer = Blueprint('infer', __name__, template_folder='templates')
@@ -24,26 +24,16 @@ def infer_route():
 				raise RuntimeError('Did you click the Ask button?')
 			# When the "op" field is equal to "add_image".
 			elif form['op'] == 'infer':
-				# Check input file.
-				upload_file = request.files['file'] if 'file' in request.files \
-					else None
-				if not upload_file is None and upload_file.filename != '':
-					check_image_extension(upload_file)
-				# Classify the query.
-				speech_input = form['speech_input'] if 'speech_input' in form \
-					else ''
-				print '@@@@@@@@@@', speech_input
-				services_needed = '' # TODO...............................................
-				options['result'] = lcm_client.infer(session['username'], 
-					services_needed, speech_input, upload_file.read()
-					if upload_file else None)
+				# # Classify the query.
+				# speech_input = form['speech_input'] if 'speech_input' in form \
+				# 	else ''
+				# print '@@@@@@@@@@', speech_input
+				# services_needed = '' # TODO...............................................
+				# options['result'] = lcm_client.infer(session['username'], 
+				# 	services_needed, speech_input, upload_file.read()
+				# 	if upload_file else None)
+				options['result'] = 'This is to be done by Anton Markov, Artem Dudkov, Steven Ma, and Yawen Luo'
 				log('Result ' + options['result'])
-				# Check if Calendar service is needed.
-				# If so, JavaScript needs to receive the parsed dates.
-				if services_needed.has_service('CA'):
-					options['dates'] = options['result']
-					options['result'] = None
-					return render_template('infer.html', **options)
 			else:
 				raise RuntimeError('Did you click the Ask button?')
 	except Exception as e:

@@ -13,3 +13,12 @@ SERVICES = {
 	'ARM' : Service('ARM', 8083, 'text', 'text'),
 	'CAMERA' : Service('CAMERA', 8084, 'image', None)
 	}
+
+# Ingredients.
+INGREDIENTS = ['Vodka', 'Orange Juice', 'Apple Juice', 'Water']
+
+# Maximum volume in ml.
+MAX_ML = 150
+
+# Time (sec) to open the valve for each ml.
+SEC_PER_ML = 3 / 125

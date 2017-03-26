@@ -1,0 +1,143 @@
+﻿.courseBox {
+    float: left;
+    display: block;
+    margin-right: 2.35765%;
+    width: 31.76157%;
+    position: relative;
+    height: 210px;
+    margin-bottom: 10px;
+    padding: 20px 15px;
+    -webkit-transition: background-color 100ms;
+    transition: background-color 100ms;
+    border-radius: 2px;
+    background-color: #f4f4f4;
+    color: #4a4a4a;
+    overflow: hidden
+}
+.courseBox:last-child {
+    margin-right: 0
+}
+.courseBox:nth-child(3n) {
+    margin-right: 0
+}
+.courseBox:nth-child(3n+1) {
+    clear: left
+}
+@media screen and (max-width: 990px) {
+    .courseBox {
+        float: left;
+        display: block;
+        margin-right: 2.35765%;
+        width: 48.82117%
+    }
+    .courseBox:last-child {
+        margin-right: 0
+    }
+}
+@media screen and (max-width: 500px) {
+    .courseBox {
+        float: left;
+        display: block;
+        margin-right: 7.42297%;
+        width: 100%;
+        height: 245px;
+        margin: 10px 0
+    }
+    .courseBox:last-child {
+        margin-right: 0
+    }
+}
+.courseBox:hover {
+    background-color: #f1fafb;
+    text-decoration: none;
+    cursor: pointer
+}
+.courseBox--buttonLabel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 69px;
+    margin: auto;
+    font-weight: 300
+}
+.courseBox--shortname {
+    margin-top: 0px;
+    margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 300
+}
+.courseBox--name {
+    margin-top: 12px;
+    font-size: 14px;
+    opacity: .6
+}
+.courseBox--assignments {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 12px 15px 11px;
+    background-color: #1ca9c4;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 300
+}
+.courseBox-new {
+    border: 2px dashed #1ca9c4;
+    border-radius: 2px;
+    background-color: transparent;
+    color: #1ca9c4;
+    font-size: 18px;
+    text-align: center
+}
+@media screen and (max-width: 500px) {
+    .courseBox-new {
+        height: 200px
+    }
+}
+html {
+    box-sizing: border-box
+}
+*,
+*::after,
+*::before {
+    box-sizing: inherit
+}
+.courseList {
+    max-width: 1200px
+}
+.courseList--term {
+    font-size: 18px;
+    font-weight: inherit
+}
+.courseList--coursesForTerm {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 18px
+}
+.courseList--coursesForTerm::after {
+    clear: both;
+    content: "";
+    display: block
+}
+.courseList--inactiveCourses {
+    display: none;
+    margin-top: 20px
+}
+.courseListDivider {
+    height: 20px;
+    margin: 35px 0;
+    border: 0;
+    background-color: #f4f4f4
+}
+html {
+    box-sizing: border-box
+}
+*,
+*::after,
+*::before {
+    box-sizing: inherit
+}

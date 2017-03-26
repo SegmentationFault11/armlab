@@ -21,8 +21,8 @@ refer to [this](http://treehouse.github.io/installation-guides/mac/mongo-mac.htm
 
 ## Structure
 
-- `controllers/`: web controllers, database module, Thrift modules, utilities module, 
-query classification module, configuration file (`Config.py`), etc.
+- `controllers/`: web controllers, database module, utilities module, 
+configuration file (`Config.py`), etc.
 - `static/`: static contents of the web front end
 - `templates/`: html Jinja templates
 - `app.py`: top-level module
