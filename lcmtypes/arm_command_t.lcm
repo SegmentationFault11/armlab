@@ -1,0 +1,7 @@
+
+struct arm_command_t
+{
+	int32_t size;
+	int32_t hole_indices[size];
+  	double stop_times[size];
+}
