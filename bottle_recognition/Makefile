@@ -8,7 +8,7 @@
 	EXECUTABLE = bottle_recognizer
 
 # Include Paths
-	INCLUDE_PATHS = -I/usr/local/include
+	INCLUDE_PATHS = -I/usr/local/include -I/usr/local/include/eigen3
 
 # Library Paths
 	LIBRARY_PATHS = -L/usr/local/lib
