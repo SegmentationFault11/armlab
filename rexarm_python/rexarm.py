@@ -164,6 +164,7 @@ class Rexarm():
         L2 = cfg[1]
         L3 = cfg[2]
         L4 = cfg[3]
+        elbow = cfg[4]
 
         if IK_DEBUG:
             print "\nx_g:", x_g
@@ -195,40 +196,79 @@ class Rexarm():
         cos_theta3 = (delta_z*delta_z + delta_r*delta_r - L2*L2 - L3*L3) / (2*L2*L3)
         if cos_theta3 > 1 or cos_theta3 < -1:
             print "\nERROR: cos(theta3) lies outside of [-1, 1]\ncos(theta3) =", cos_theta3
-            if cos_theta3  < 1.04:
-                cos_theta3 = 1.0
-            if cos_theta3  > -1.04:
-                cos_theta3 = -1.0
 
         theta3 = math.acos(cos_theta3)
+        if elbow == 0:
+            theta3 = -1*theta3 # 'Elbow-down' 
         if IK_DEBUG:
             print "cos_theta3:", round(cos_theta3,3)
-            print "theta3 (before shift):", round(theta3,3)
-        theta3 = theta3 - PI/2 # theta3 needs to be in [-PI/2, PI/2]
+            print "\ntheta3:", round(theta3,3)
 
         beta = math.atan2(delta_z, delta_r)
         cos_psi = (L3*L3 - (delta_z*delta_z + delta_r*delta_r) - L2*L2) / (-2*math.sqrt(delta_z*delta_z + delta_r*delta_r)*L2)
         if cos_psi > 1 or cos_psi < -1:
             print "\nERROR: cos(psi) lies outside of [-1, 1]\ncos(psi) =", cos_psi
-            if cos_psi  < 1.04:
-                cos_psi = 1.0
-            if cos_psi  > -1.04:
-                cos_psi = -1.0
-        psi = math.acos( cos_psi ) - PI/2
+        psi = math.acos( cos_psi )
         
-        if theta3 >= 0:
+        if elbow:
             theta2 = PI/2 - beta - psi # "Elbow-up" 
         else:
-            theta2 = PI/2 - beta + psi # "Elbow-down"
+            theta2 = PI/2 - beta + psi # "Elbow-down": that's what we want
 
         theta4 = phi - theta2 - theta3 + PI/2 
 
         if IK_DEBUG:
-            print "\ntheta3:", round(theta3,3)
             print "beta:", round(beta,3)
             print "psi:", round(psi,3)
             print "theta2:", round(theta2,3)
             print "theta4:", round(theta4,3)
+
+        print "\nIK: Done"
+        print "________________________________________"
+        return [theta1, theta2, theta3, theta4]
+
+    def rexarm_ik_kuipers(self, pose, cfg):
+        print "________________________________________"
+        print "IK: Started"        
+
+        x = pose[0]
+        y = pose[1]
+        h = pose[2]
+        phi = pose[3]
+        d1 = cfg[0]
+        d2 = cfg[1]
+        d3 = cfg[2]
+        d4 = cfg[3]
+
+        if IK_DEBUG:
+            print "\nx:", x
+            print "y:", y
+            print "h:", h
+            print "phi:", phi
+            print "d1:", d1
+            print "d2:", d2
+            print "d3:", d3
+            print "d4:", d4
+
+        theta1 = math.atan2(y,x)
+        R = math.sqrt(x*x + y*y)
+        M = math.sqrt( R*R + (d4 + h - d1)*(d4 + h - d1) )
+        alpha = math.atan2(d4 + h - d1, R)
+        cos_beta = (-1*d3*d3 + d2*d2 + M*M) / (2*d2*M)
+
+        if IK_DEBUG:
+            print "\ntheta1:", theta1
+            print "R:", R
+            print "M:", M
+            print "alpha:", alpha
+            print "cos_beta:", cos_beta
+
+        beta = math.acos( cos_beta )
+        gamma = math.acos( (-1*M*M + d2*d2 + d3*d3) / (2*d2*d3) )
+
+        theta2 = PI/2 - alpha - beta
+        theta3 = PI - gamma
+        theta4 = PI - theta2 - theta3
 
         print "\nIK: Done"
         print "________________________________________"
