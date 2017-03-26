@@ -1,5 +1,9 @@
 #include "socket_functions.hpp"
 
+#ifdef __APPLE__
+    #define MSG_NOSIGNAL 0
+#endif
+
 using namespace std;
 
 int setup_socket(int port) {
