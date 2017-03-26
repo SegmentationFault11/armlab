@@ -44,3 +44,8 @@ int setup_socket(int port) {
 
     return new_socket;
 }
+
+// Wrapper that accetps the incoming communication
+int accept_socket(int serv_soc) {
+    return accept(serv_soc, (struct sockaddr*) NULL, NULL);
+}
