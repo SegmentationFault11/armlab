@@ -1,6 +1,9 @@
 # Targets
 	TARGETS = bottle_recognition_main.cpp bottle_recognizer.cpp socket_functions.cpp
 
+# Object files
+	OBJECTS = apriltags/libapriltags.a
+
 # Designated compiler
 	CXX = g++ -std=c++11
 
@@ -20,10 +23,10 @@
 	OX = -O3
 
 # Compilation Flags
-	COMPILATION_FLAGS = -Wall -Werror -Wextra -pthread
+	COMPILATION_FLAGS = -Wall -Werror -Wextra -pthread -ldl
 
 all:
-	$(CXX) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(TARGETS) -o $(EXECUTABLE)
+	$(CXX) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(OBJECTS) $(TARGETS) -o $(EXECUTABLE)
 	
 debug:
 	$(CXX) -DDEBUG $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(TARGETS) -o $(EXECUTABLE)
