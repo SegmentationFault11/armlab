@@ -49,3 +49,42 @@ int setup_socket(int port) {
 int accept_socket(int serv_soc) {
     return accept(serv_soc, (struct sockaddr*) NULL, NULL);
 }
+
+string read_msg(int socket) {
+    string msg = "";
+    size_t msg_length = 0;
+
+    char buf[1];
+    while (true) {
+        int bytes_received = recv(socket, &buf, 1, 0);
+
+        if (bytes_received != 1 && bytes_received != 0) {
+            throw runtime_error("Error reading from socket");
+        }
+
+        if (*buf == '\0') {
+            break;
+        }
+
+        msg += *buf;
+        ++msg_length;
+
+        if (msg_length > 512) {
+            cout << "Received message too long" << endl;
+
+            return "";
+        }
+    }
+
+    return msg;
+}
+
+void send_msg(int socket, string msg) {
+    size_t msg_length = msg.size();
+
+    size_t bytes_sent = 0;
+
+    while (bytes_sent < msg_length) {
+        bytes_sent += send(socket, msg.c_str() + bytes_sent, msg_length - bytes_sent, MSG_NOSIGNAL);
+    }
+}
