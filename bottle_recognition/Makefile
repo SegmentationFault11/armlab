@@ -2,7 +2,7 @@
 	TARGETS = bottle_recognition_main.cpp bottle_recognizer.cpp socket_functions.cpp
 
 # Object files
-	OBJECTS = $(wildcard apriltags/*.cc)
+	OBJECTS = apriltags/libapriltags.a
 
 # Designated compiler
 	CXX = g++ -std=c++11
