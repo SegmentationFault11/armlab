@@ -88,11 +88,16 @@ class Gui(QtGui.QMainWindow):
         Connect Sliders to Function
         LAB TASK: CONNECT THE OTHER 5 SLIDERS IMPLEMENTED IN THE GUI 
         """ 
+        self.ui.sldrShoulder.setValue(-90)
+        # self.ui.sldrMaxTorque.setValue(10)
+        self.ui.sldrSpeed.setValue(6)
+
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
         self.ui.sldrElbow.valueChanged.connect(self.sliderChange)
         self.ui.sldrWrist.valueChanged.connect(self.sliderChange)
         self.ui.sldrMaxTorque.valueChanged.connect(self.sliderChange)
+        self.ui.sldrSpeed.valueChanged.connect(self.sliderChange)
 
         """ Commands the arm as the arm initialize to 0,0,0,0 angles """
         self.sliderChange() 
@@ -201,9 +206,11 @@ class Gui(QtGui.QMainWindow):
         self.ui.rdoutShoulder.setText(str(-1*self.ui.sldrShoulder.value()))
         self.ui.rdoutElbow.setText(str(-1*self.ui.sldrElbow.value()))
         self.ui.rdoutWrist.setText(str(-1*self.ui.sldrWrist.value()))
-
         self.ui.rdoutTorq.setText(str(self.ui.sldrMaxTorque.value()) + "%")
+        self.ui.rdoutSpeed.setText(str(self.ui.sldrSpeed.value()) + "%")
+
         self.rex.max_torque = self.ui.sldrMaxTorque.value()/100.0
+        self.rex.speed = self.ui.sldrSpeed.value()/100.0
         self.rex.joint_angles[0] = self.ui.sldrBase.value()*D2R
         self.rex.joint_angles[1] = self.ui.sldrShoulder.value()*D2R
         self.rex.joint_angles[2] = self.ui.sldrElbow.value()*D2R
