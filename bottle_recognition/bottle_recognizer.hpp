@@ -32,7 +32,14 @@
 using namespace std;
 
 typedef class BottleRecognizer {
+private:
+
+    AprilTags::TagDetector* tag_detector;
+
 public:
+
+    BottleRecognizer();
+    ~BottleRecognizer();
 
     string get_locations();
     
