@@ -1,11 +1,13 @@
-import sys
+import sys, os, inspect, thread, math
 import cv2
+from lcm import LCM
 import numpy as np
 from time import sleep
 from PyQt4 import QtGui, QtCore, Qt
 from ui import Ui_MainWindow
 from rexarm import Rexarm
 from decimal import *
+import time
 
 from video import Video
 
@@ -31,20 +33,59 @@ cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Len
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
 IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
+LCM_DEBUG = 1 # Change to '1' to print out stuff for LCM
 
 FINAL_END_EFFECTORS = [
-    [0.10125143894897511, -0.12094915633605999, 0.23777505667133353, -0.15],
-    [0.021227449684100921, -0.16329518003527718, 0.23061180478670984, -0.15],
-    [-0.070747536793389756, -0.14850850805866353, 0.2308643354414559, -0.15],
-    [-0.13855895338992918, -0.088664577840474698, 0.2308643354414559, -0.15],
-    [-0.16497080154134619, 0.00050624926499197244, 0.23026481303086488, -0.15],
-    [-0.14187864044490325, 0.084178815832835346, 0.23026481303086488, -0.15],
-    [-0.072391107920756079, 0.14014306904605794, 0.23777505667133353, -0.15],
-    [0.012632140474910281, 0.15722907280355261, 0.23777505667133353, -0.15],
-    [0.093447433342095709, 0.12707529071151988, 0.23777505667133353, -0.15],
+    [0.10125143894897511, -0.12094915633605999, 0.20061180478670984, -0.15],
+    [0.021227449684100921, -0.16329518003527718, 0.20061180478670984, -0.15],
+    [-0.070747536793389756, -0.14850850805866353, 0.20061180478670984, -0.15],
+    [-0.13855895338992918, -0.088664577840474698, 0.20061180478670984, -0.15],
+    [-0.16497080154134619, 0.00050624926499197244, 0.20061180478670984, -0.15],
+    [-0.14187864044490325, 0.084178815832835346, 0.20061180478670984, -0.15],
+    [-0.072391107920756079, 0.14014306904605794, 0.20061180478670984, -0.15],
+    [0.012632140474910281, 0.15722907280355261, 0.20061180478670984, -0.15],
+    [0.093447433342095709, 0.12707529071151988, 0.20061180478670984, -0.15],
     [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15] # HOME
 ]
- 
+
+# import LCM packages
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(
+inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0,parentdir) 
+from lcm_python import arm_command_t    
+
+current_hole_index = -1
+is_reached_current_bottle = 0
+
+
+def arm_handler(channel, data):
+    global current_hole_index, is_reached_current_bottle
+    msg = arm_command_t.arm_command_t.decode(data)
+    if LCM_DEBUG:
+        print "\nMessage Received"
+        print "Size:", msg.size
+        print "Hole Indices:", msg.hole_indices
+        print "Stop Times:", msg.stop_times
+    for i in range(msg.size):
+        current_hole_index = msg.hole_indices[i]
+        ex.driveToBottle(current_hole_index)
+        while (is_reached_current_bottle == 0):
+            a = 1
+        time.sleep(msg.stop_times[i])  
+        is_reached_current_bottle = 0
+    ex.driveToBottle(9) # Drive home   
+
+
+def handle_lcm():
+    lc = LCM()
+    subscription = lc.subscribe('ARM', arm_handler)
+    print 'Subscribed to the ARM channel, waiting for command...'
+    while True:
+        lc.handle()
+
+thread.start_new_thread( handle_lcm, () )
+
 class Gui(QtGui.QMainWindow):
     """ 
     Main GUI Class
@@ -114,31 +155,31 @@ class Gui(QtGui.QMainWindow):
         self.ui.btnUser3.setText("Home")
         self.ui.btnUser3.clicked.connect(self.driveToHome)
 
-        self.ui.btnUser4.setText("Bottle 1")
+        self.ui.btnUser4.setText("Bottle 0")
         self.ui.btnUser4.clicked.connect(self.driveToBottle0)
 
-        self.ui.btnUser5.setText("Bottle 2")
+        self.ui.btnUser5.setText("Bottle 1")
         self.ui.btnUser5.clicked.connect(self.driveToBottle1)
 
-        self.ui.btnUser6.setText("Bottle 3")
+        self.ui.btnUser6.setText("Bottle 2")
         self.ui.btnUser6.clicked.connect(self.driveToBottle2)
 
-        self.ui.btnUser7.setText("Bottle 4")
+        self.ui.btnUser7.setText("Bottle 3")
         self.ui.btnUser7.clicked.connect(self.driveToBottle3)
 
-        self.ui.btnUser8.setText("Bottle 5")
+        self.ui.btnUser8.setText("Bottle 4")
         self.ui.btnUser8.clicked.connect(self.driveToBottle4)
 
-        self.ui.btnUser9.setText("Bottle 6")
+        self.ui.btnUser9.setText("Bottle 5")
         self.ui.btnUser9.clicked.connect(self.driveToBottle5)
 
-        self.ui.btnUser10.setText("Bottle 7")
+        self.ui.btnUser10.setText("Bottle 6")
         self.ui.btnUser10.clicked.connect(self.driveToBottle6)
 
-        self.ui.btnUser11.setText("Bottle 8")
+        self.ui.btnUser11.setText("Bottle 7")
         self.ui.btnUser11.clicked.connect(self.driveToBottle7)
 
-        self.ui.btnUser12.setText("Bottle 9")
+        self.ui.btnUser12.setText("Bottle 8")
         self.ui.btnUser12.clicked.connect(self.driveToBottle8)
     
     def play(self):
@@ -166,6 +207,7 @@ class Gui(QtGui.QMainWindow):
         self.ui.rdoutElbowJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[2]*R2D)))
         self.ui.rdoutWristJC.setText(str("%.2f" % (-1*self.rex.joint_angles_fb[3]*R2D)))
         self.fk()
+        self.check_if_reached()
 
         """ 
         Mouse position presentation in GUI
@@ -284,6 +326,26 @@ class Gui(QtGui.QMainWindow):
         self.video.aff_flag = 1 
         self.ui.rdoutStatus.setText("Affine Calibration: Click Point %d" 
                                     %(self.video.mouse_click_id + 1))
+
+    def check_if_reached(self):
+        global is_reached_current_bottle
+        desired_ee = FINAL_END_EFFECTORS[current_hole_index]
+        error_x = abs((end_effector[0,0] - desired_ee[0])/desired_ee[0]) * 100.0
+        error_y = abs((end_effector[1,0] - desired_ee[1])/desired_ee[1]) * 100.0
+        error_z = abs((end_effector[2,0] - desired_ee[2])/desired_ee[2]) * 100.0
+        # if LCM_DEBUG:
+        #     print "\nerror_x:", error_x
+        #     print "error_y:", error_y
+        #     print "error_z:", error_z
+        #     print "current_hole_index:", current_hole_index
+        #     print "desired_ee:", desired_ee
+
+        is_reached_current_bottle = ((error_x < 6) and (error_y < 5) and (error_z < 5)) 
+        # if is_reached_current_bottle:
+        #     print "REACHED:", desired_ee
+
+        return is_reached_current_bottle 
+
     def fk(self):
         """ 
         Function called when affine calibration button is called.
@@ -406,6 +468,7 @@ class Gui(QtGui.QMainWindow):
         self.rex.cmd_publish()
 
 def main():
+    global ex
     print "STARTED\n"
     app = QtGui.QApplication(sys.argv)
     ex = Gui()
