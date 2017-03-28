@@ -41,8 +41,21 @@ string BottleRecognizer::get_locations() {
             break;
         }
     }
+
+    return "sf";
 }
 
-bool processImage(cv::Mat& image, cv::Mat& image_gray, vector<bottle_t>& bottle_list) {
-    
+bool BottleRecognizer::processImage(cv::Mat& image, cv::Mat& image_gray, vector<bottle_t>& bottle_list) {
+    cv::cvtColor(image, image_gray, CV_BGR2GRAY);
+
+    vector<AprilTags::TagDetection> detections = tag_detector->extractTags(image_gray);
+
+    for (size_t i = 0; i < detections.size(); i++) {
+        detections[i].draw(image);
+    }
+    imshow(display_window_name, image);
+
+    (void) bottle_list;
+
+    return false;
 }
