@@ -1,6 +1,7 @@
 from flask import *
 from AccessManagement import login_required
 from LcmClient import lcm_client
+import logging
 
 
 create = Blueprint('create', __name__, template_folder='templates')
@@ -17,6 +18,6 @@ def create_route():
 			services_list.append((service.name, host, port))
 		options['service_list']= sorted(services_list, key=lambda i: i[0])
 	except Exception as e:
-		log(e)
+		logging.error(e)
 		options['error'] = e			
 	return render_template("create.html", **options)

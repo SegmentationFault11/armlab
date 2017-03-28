@@ -1,5 +1,5 @@
-import os
-from Utilities import log
+import os, logging
+
 
 class Service(object):
 	LEARNERS = { 'audio' : [], 'image' : [], 'text' : [] } 
@@ -23,7 +23,7 @@ class Service(object):
 			tcp_addr = os.environ.get(
 				self.name + '_PORT_' + str(self.port) + '_TCP_ADDR')
 			if tcp_addr:
-				log('TCP address is resolved to ' + tcp_addr)
+				logging.debug('TCP address is resolved to %s' % tcp_addr)
 				host = tcp_addr
 			return host, self.port
 		except Exception:

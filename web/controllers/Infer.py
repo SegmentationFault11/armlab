@@ -1,8 +1,8 @@
 from flask import *
 from AccessManagement import login_required
 from LcmClient import lcm_client
-from Utilities import log
-import os
+from Utilities import check_text_input
+import os, logging
 
 infer = Blueprint('infer', __name__, template_folder='templates')
 
@@ -11,7 +11,8 @@ infer = Blueprint('infer', __name__, template_folder='templates')
 @login_required
 def infer_route():
 	options = {}
-	if os.environ.get('ASR_ADDR_PORT'):
+	username = session['username']
+	if os.environ.get('ASR_ADDR_PO`RT'):
 		options['asr_addr_port'] = os.environ.get('ASR_ADDR_PORT')
 	else:
 		options['asr_addr_port'] = 'ws://localhost:8081'
@@ -22,24 +23,19 @@ def infer_route():
 			# If the request does not contain an "op" field.
 			if not 'op' in form:
 				raise RuntimeError('Did you click the Ask button?')
-			# When the "op" field is equal to "add_image".
+			# When the "op" field is equal to "infer".
 			elif form['op'] == 'infer':
 				# # Classify the query.
-				# speech_input = form['speech_input'] if 'speech_input' in form \
-				# 	else ''
-				# print '@@@@@@@@@@', speech_input
-				# services_needed = '' # TODO...............................................
-				# options['result'] = lcm_client.infer(session['username'], 
-				# 	services_needed, speech_input, upload_file.read()
-				# 	if upload_file else None)
-				options['result'] = 'This is to be done by Anton Markov, Artem Dudkov, Steven Ma, and Yawen Luo'
-				log('Result ' + options['result'])
+				speech_input = form['speech_input'] if 'speech_input' in form \
+					else ''
+				check_text_input(speech_input)
+				logging.debug('Speech input: %s' % speech_input)
+				options['result'] = lcm_client.send_to_backend(username, speech_input)
+				logging.debug('Result: %s' % options['result'])
 			else:
 				raise RuntimeError('Did you click the Ask button?')
 	except Exception as e:
-		log(e)
-		if str(e) == 'TSocket read 0 bytes':
-			e = 'Back-end service encountered a problem'
+		logging.error(e)
 		options['error'] = e
 		return render_template('infer.html', **options)
 	# Display.
