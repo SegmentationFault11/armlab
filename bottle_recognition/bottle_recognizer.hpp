@@ -36,10 +36,16 @@ private:
 
     AprilTags::TagDetector* tag_detector;
 
+    cv::VideoCapture video_capture;
+
+    string display_window_name;
+
 public:
 
     BottleRecognizer();
     ~BottleRecognizer();
+
+    void setup();
 
     string get_locations();
     
