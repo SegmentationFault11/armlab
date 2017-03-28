@@ -1,12 +1,9 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
- 
 from controllers import *
 from flask import *
 from threading import Thread
 import logging
-
+from logging import handlers
+import sys
 
 # Initialize the Flask app with the template folder address.
 app = Flask(__name__, template_folder='templates')
@@ -23,6 +20,14 @@ app.register_blueprint(Infer.infer)
 
 # Session.
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+
+def setup_logging():
+	log = logging.getLogger('')
+	log.setLevel(logging.DEBUG)
+	format = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+	ch = logging.StreamHandler(sys.stdout)
+	ch.setFormatter(format)
+	log.addHandler(ch)
 	
 def flask_listener():
 	app.run(host='0.0.0.0', port=3000, debug=True, use_reloader=False,
@@ -30,13 +35,12 @@ def flask_listener():
 	
 def web_socket_listener():
 	print 'Start web socket at 8081'
-	logging.basicConfig(level=logging.DEBUG,
-						format="%(levelname)8s %(asctime)s %(message)s ")
 	logging.debug('Starting up server')
 	WebSocket.tornado.options.parse_command_line()
 	WebSocket.Application().listen(8081)
 	WebSocket.tornado.ioloop.IOLoop.instance().start()
 	 
 if __name__ == '__main__':
+	setup_logging()
 	Thread(target = flask_listener).start()
 	web_socket_listener()

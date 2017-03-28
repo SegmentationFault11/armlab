@@ -1,10 +1,10 @@
+import hashlib, datetime, logging
 from flask import *
 import Database
-import hashlib, datetime
 from AccessManagement import login_required
 from Database import database 
 from LcmClient import lcm_client
-from Utilities import log, check_text_input
+from Utilities import check_text_input
 from Config import INGREDIENTS, MAX_ML
 
 
@@ -46,7 +46,7 @@ def learn_route():
 				ingredients = [(ingredient, check_amount(form[ingredient])) \
 				for ingredient in INGREDIENTS]
 				check_total_amount(ingredients)
-				log('ingredients: ' + str(ingredients))
+				logging.debug('New drink ingredients: %s' % ingredients)
 				# Add the recipe into the database.
 				database.add_recipe(username, drinkname, ingredients)
 			# Delete a recipe.
@@ -57,13 +57,13 @@ def learn_route():
 			else:
 				raise RuntimeError('Did you click the button?')
 	except Exception as e:
-		log(e)
+		logging.error(e)
 		options['error'] = e
 	try:
 		# Retrieve recipes.
 		options['recipes'] = database.get_recipes(username)
 		options['ingredients'] = INGREDIENTS
 	except Exception as e:
-		log(e)
+		logging.error(e)
 		options['error'] = e
 	return render_template('learn.html', **options)
