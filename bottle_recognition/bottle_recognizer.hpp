@@ -31,6 +31,13 @@
 
 using namespace std;
 
+typedef struct Bottle {
+    uint8_t id;
+    float x;
+    float y;
+
+} bottle_t;
+
 typedef class BottleRecognizer {
 private:
 
@@ -48,5 +55,7 @@ public:
     void setup();
 
     string get_locations();
+
+    bool processImage(cv::Mat&, cv::Mat&, vector<bottle_t>&);
     
 } bottle_recognizer_t;

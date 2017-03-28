@@ -1,12 +1,5 @@
 #include "bottle_recognizer.hpp"
 
-typedef struct Bottle {
-    uint8_t id;
-    float x;
-    float y;
-
-} bottle_t;
-
 BottleRecognizer::BottleRecognizer() {
     tag_detector = new AprilTags::TagDetector(AprilTags::tagCodes16h5);
 
@@ -37,10 +30,19 @@ string BottleRecognizer::get_locations() {
     cv::Mat image;
     cv::Mat image_gray;
 
+    vector<bottle_t> bottle_list;
+
     while (true) {
         video_capture >> image;
-        processImage(image, image_gray);
+
+        bool error = processImage(image, image_gray, bottle_list);
+
+        if (!error) {
+            break;
+        }
     }
 }
 
-vector<bottle_t> processImage(cv::Mat, cv::Mat);
+bool processImage(cv::Mat& image, cv::Mat& image_gray, vector<bottle_t>& bottle_list) {
+    
+}
