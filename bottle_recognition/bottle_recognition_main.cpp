@@ -9,6 +9,7 @@ using namespace std;
 
 int main() {
     BottleRecognizer recognizer;
+    recognizer.setup();
 
     int soc = setup_socket(12000);
 

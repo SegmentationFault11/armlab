@@ -1,3 +1,5 @@
 .DS_Store
-.pyc
-.o
+*.pyc
+*.o
+*.swp
+bottle_recognition/bottle_recognizer

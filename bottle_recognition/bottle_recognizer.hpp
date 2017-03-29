@@ -31,16 +31,31 @@
 
 using namespace std;
 
+typedef struct Bottle {
+    uint8_t id;
+    float x;
+    float y;
+
+} bottle_t;
+
 typedef class BottleRecognizer {
 private:
 
     AprilTags::TagDetector* tag_detector;
+
+    cv::VideoCapture video_capture;
+
+    string display_window_name;
 
 public:
 
     BottleRecognizer();
     ~BottleRecognizer();
 
+    void setup();
+
     string get_locations();
+
+    string assign_locations(vector<bottle_t>&);
     
 } bottle_recognizer_t;
