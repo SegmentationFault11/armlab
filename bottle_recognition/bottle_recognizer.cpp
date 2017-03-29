@@ -1,5 +1,8 @@
 #include "bottle_recognizer.hpp"
 
+// #ifdef DEBUG
+// #define _(x)
+
 const double PI = 3.14159265358979323846;
 const double TWOPI = 2.0*PI;
 
@@ -108,10 +111,6 @@ BottleRecognizer::BottleRecognizer() {
 
 BottleRecognizer::~BottleRecognizer() {
     delete tag_detector;
-
-    for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
-        delete iter->second;
-    }
 }
 
 void BottleRecognizer::setup() {
@@ -126,14 +125,21 @@ void BottleRecognizer::setup() {
 
     video_capture.set(CV_CAP_PROP_FRAME_WIDTH, 640);
     video_capture.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
+
+    for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
+        iter->second->occupied = false;
+    }
 }
 
 string BottleRecognizer::get_locations() {
+    reset_slot_occupancy();
+
     cv::Mat image;
     cv::Mat image_gray;
 
     vector<AprilTags::TagDetection> bottle_list;
 
+    //cout << "pre" << endl;
     unsigned num_repeats = 0;
     while (true) {
         video_capture >> image;
@@ -153,6 +159,8 @@ string BottleRecognizer::get_locations() {
             break;
         }
     }
+
+    //cout << "post" << endl;
 
     if (bottle_list.empty()) {
         return "FATAL: No Bottles Detected";
@@ -195,7 +203,7 @@ string BottleRecognizer::assign_locations(vector<AprilTags::TagDetection>& bottl
         reply_str += "{" + to_string(slot_id) + "|" + to_string(curr_bottle.id) + "}";
     }
 
-    return to_string(bottle_list.size());
+    return reply_str;
 }
 
 void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const {
@@ -225,5 +233,11 @@ void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const
              << ", pitch=" << pitch
              << ", roll=" << roll
              << endl;
+}
+
+void reset_slot_occupancy() {
+    for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
+        delete iter->second;
+    }
 }
 

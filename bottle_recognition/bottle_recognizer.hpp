@@ -66,5 +66,7 @@ public:
     string assign_locations(vector<AprilTags::TagDetection>&);
 
     void print_detection(AprilTags::TagDetection&) const;
+
+    void reset_slot_occupancy();
     
 } bottle_recognizer_t;

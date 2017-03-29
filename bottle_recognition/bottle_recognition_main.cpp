@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include "socket_functions.hpp"
 #include "bottle_recognizer.hpp"
@@ -10,11 +11,12 @@ using namespace std;
 int main() {
     BottleRecognizer recognizer;
     recognizer.setup();
-
+    
     int soc = setup_socket(12000);
 
     int client_soc = -1;
     while ((client_soc = accept_socket(soc))) {
+        //cout << "Socket receive" << endl;
 
         if (client_soc == -1) {
             cerr << "Invalid socket" << endl;
@@ -25,6 +27,7 @@ int main() {
 
         string locations = "Invalid Request";
         if (msg == "Get Locations") {
+            //cout << "recognizer start" << endl;
             locations = recognizer.get_locations();
         }
 
