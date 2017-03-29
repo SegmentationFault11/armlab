@@ -1,3 +1,3 @@
-__all__ = ['Main', 'AccessManagement', 'Service', 'Graph',
-           'ThriftClient', 'Create', 'Learn', 'Infer',
-           'Config', 'User', 'Utilities', 'Database']
+__all__ = ['AccessManagement', 'Config', 'Create', 'Database', 'Infer', \
+'LcmClient', 'Learn', 'LoginForm', 'Main', 'RegistrationForm', 'Service', \
+'User', 'Utilities']

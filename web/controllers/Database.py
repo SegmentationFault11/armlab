@@ -1,6 +1,7 @@
 import hashlib, uuid
 from pymongo import MongoClient
 from base64 import b64encode
+from Utilities import logger
 import os, logging, Config
 
 
@@ -12,10 +13,10 @@ class Database(object):
 	def __init__(self):
 		mongodb_addr = os.environ.get('MONGO_PORT_27017_TCP_ADDR')
 		if mongodb_addr:
-			logging.info('MongoDB: ' + mongodb_addr)
+			logger.INFO('MongoDB: ' + mongodb_addr)
 			self.db = MongoClient(mongodb_addr, 27017).barman
 		else:
-			logging.info('MongoDB: localhost')
+			logger.info('MongoDB: localhost')
 			self.db = MongoClient().barman
 		self.users = self.db.users
 	
@@ -67,7 +68,7 @@ class Database(object):
 		
 	# Returns all the recipes.
 	def get_recipes(self, username):
-		logging.info('Retrieving recipes from recipe_' + username)
+		logger.info('Retrieving recipes from recipe_' + username)
 		return [recipe for recipe in self.get_recipe_collection(username).find()]
 
 	# Returns the recipe collection of the user.

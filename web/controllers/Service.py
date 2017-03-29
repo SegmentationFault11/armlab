@@ -1,4 +1,5 @@
-import os, logging
+from Utilities import logger
+import os
 
 
 class Service(object):
@@ -23,7 +24,7 @@ class Service(object):
 			tcp_addr = os.environ.get(
 				self.name + '_PORT_' + str(self.port) + '_TCP_ADDR')
 			if tcp_addr:
-				logging.debug('TCP address is resolved to %s' % tcp_addr)
+				logger.debug('TCP address is to %s' % tcp_addr)
 				host = tcp_addr
 			return host, self.port
 		except Exception:

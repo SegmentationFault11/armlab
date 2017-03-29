@@ -21,4 +21,4 @@ INGREDIENTS = ['Vodka', 'Orange Juice', 'Apple Juice', 'Water']
 MAX_ML = 150
 
 # Time (sec) to open the valve for each ml.
-SEC_PER_ML = 3 / 125
+SEC_PER_ML = 3.0 / 125.0
