@@ -1,29 +1,42 @@
 #include "bottle_recognizer.hpp"
 
-// #ifdef DEBUG
-// #define _(x)
+#ifdef DEBUG
+#define _(x) x
+#else
+#define _(x)
+#endif
 
 const double PI = 3.14159265358979323846;
 const double TWOPI = 2.0*PI;
 
 inline double standardRad(double t) {
+    _(cout << "standardRad >> start, time: " << get_milli_sec() << endl;)
+
     if (t >= 0.) {
         t = fmod(t+PI, TWOPI) - PI;
     } else {
         t = fmod(t-PI, -TWOPI) + PI;
     }
+
+    _(cout << "standardRad >> end, time: " << get_milli_sec() << endl;)
     return t;
 }
 
 void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) {
+    _(cout << "wRo_to_euler >> start, time: " << get_milli_sec() << endl;)
+
     yaw = standardRad(atan2(wRo(1,0), wRo(0,0)));
     double c = cos(yaw);
     double s = sin(yaw);
     pitch = standardRad(atan2(-wRo(2,0), wRo(0,0)*c + wRo(1,0)*s));
     roll  = standardRad(atan2(wRo(0,2)*s - wRo(1,2)*c, -wRo(0,1)*s + wRo(1,1)*c));
+
+    _(cout << "wRo_to_euler >> end, time: " << get_milli_sec() << endl;)
 }
 
 float calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bottle_slot) {
+    _(cout << "calc_tag2slot_dist >> start, time: " << get_milli_sec() << endl;)
+
     Eigen::Vector3d translation;
     Eigen::Matrix3d rotation;
     tag_location.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
@@ -39,12 +52,17 @@ float calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bot
     double yaw, pitch, roll;
     wRo_to_euler(fixed_rot, yaw, pitch, roll);
 
-    return sqrt(pow(translation(0) - bottle_slot.x, 2) 
+    float distance = sqrt(pow(translation(0) - bottle_slot.x, 2) 
         + pow(translation(1) - bottle_slot.y, 2) 
         + pow(translation(2) - bottle_slot.z, 2));
+
+    _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
+    return distance;
 }
 
 BottleRecognizer::BottleRecognizer() {
+    _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
+
     tag_detector = new AprilTags::TagDetector(AprilTags::tagCodes16h5);
 
     display_window_name = "bottle_recognizer";
@@ -107,13 +125,18 @@ BottleRecognizer::BottleRecognizer() {
             bottle_slots[slot]->occupied = false;
         }
     }
+
+    _(cout << "BottleRecognizer >> end, time: " << get_milli_sec() << endl;)
 }
 
 BottleRecognizer::~BottleRecognizer() {
+    _(cout << "~BottleRecognizer >> called, time: " << get_milli_sec() << endl;)
     delete tag_detector;
 }
 
 void BottleRecognizer::setup() {
+    _(cout << "setup >> start, time: " << get_milli_sec() << endl;)
+
     cv::namedWindow(display_window_name, 1);
 
     // find and open a USB camera (built in laptop camera, web cam etc)
@@ -129,9 +152,13 @@ void BottleRecognizer::setup() {
     for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
         iter->second->occupied = false;
     }
+
+    _(cout << "setup >> end, time: " << get_milli_sec() << endl;)
 }
 
 string BottleRecognizer::get_locations() {
+    _(cout << "get_locations >> start, time: " << get_milli_sec() << endl;)
+
     reset_slot_occupancy();
 
     cv::Mat image;
@@ -170,10 +197,13 @@ string BottleRecognizer::get_locations() {
         print_detection(bottle_list[i]);
     }
 
+    _(cout << "get_locations >> end, time: " << get_milli_sec() << endl;)
     return assign_locations(bottle_list);
 }
 
 string BottleRecognizer::assign_locations(vector<AprilTags::TagDetection>& bottle_list) {
+    _(cout << "assign_locations >> start, time: " << get_milli_sec() << endl;)
+    
     string reply_str = "";
 
     while (bottle_list.size()) {
@@ -203,6 +233,7 @@ string BottleRecognizer::assign_locations(vector<AprilTags::TagDetection>& bottl
         reply_str += "{" + to_string(slot_id) + "|" + to_string(curr_bottle.id) + "}";
     }
 
+    _(cout << "assign_locations >> end, time: " << get_milli_sec() << endl;)
     return reply_str;
 }
 
@@ -235,9 +266,13 @@ void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const
              << endl;
 }
 
-void reset_slot_occupancy() {
+void BottleRecognizer::reset_slot_occupancy() {
+    _(cout << "reset_slot_occupancy >> start, time: " << get_milli_sec() << endl;)
+
     for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
         delete iter->second;
     }
+
+    _(cout << "reset_slot_occupancy >> end, time: " << get_milli_sec() << endl;)
 }
 

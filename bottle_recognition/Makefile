@@ -1,5 +1,5 @@
 # Targets
-	TARGETS = bottle_recognition_main.cpp bottle_recognizer.cpp socket_functions.cpp
+	TARGETS = bottle_recognition_main.cpp bottle_recognizer.cpp socket_functions.cpp helper.cpp
 
 # Object files
 	OBJECTS = apriltags/libapriltags.a
@@ -29,4 +29,4 @@ all:
 	$(CXX) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(OBJECTS) $(TARGETS) -o $(EXECUTABLE)
 	
 debug:
-	$(CXX) -DDEBUG $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(TARGETS) -o $(EXECUTABLE)
+	$(CXX) -DDEBUG $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(OBJECTS) $(TARGETS) -o $(EXECUTABLE)

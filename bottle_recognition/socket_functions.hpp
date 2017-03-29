@@ -18,6 +18,8 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 
+#include "helper.hpp"
+
 using namespace std;
 
 int setup_socket(int);

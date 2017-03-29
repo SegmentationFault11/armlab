@@ -4,9 +4,17 @@
     #define MSG_NOSIGNAL 0
 #endif
 
+#ifdef DEBUG
+#define _(x) x
+#else
+#define _(x)
+#endif
+
 using namespace std;
 
 int setup_socket(int port) {
+    _(cout << "setup_socket >> start, time: " << get_milli_sec() << endl;)
+
     int new_socket;
 
     // Create a socket
@@ -46,15 +54,19 @@ int setup_socket(int port) {
         throw runtime_error("Error listening with socket");
     }
 
+    _(cout << "setup_socket >> end, time: " << get_milli_sec() << endl;)
     return new_socket;
 }
 
 // Wrapper that accetps the incoming communication
 int accept_socket(int serv_soc) {
+    _(cout << "accept_socket >> called, time: " << get_milli_sec() << endl;)
     return accept(serv_soc, (struct sockaddr*) NULL, NULL);
 }
 
 string read_msg(int socket) {
+    _(cout << "read_msg >> start, time: " << get_milli_sec() << endl;)
+
     string msg = "";
     size_t msg_length = 0;
 
@@ -74,16 +86,16 @@ string read_msg(int socket) {
         ++msg_length;
 
         if (msg_length > 512) {
-            cout << "Received message too long" << endl;
-
-            return "";
+            throw runtime_error("Message received longer than 512 characters");
         }
     }
 
+    _(cout << "read_msg >> end, time: " << get_milli_sec() << endl;)
     return msg;
 }
 
 void send_msg(int socket, string msg) {
+    _(cout << "send_msg >> start, time: " << get_milli_sec() << endl;)
     size_t msg_length = msg.size();
 
     size_t bytes_sent = 0;
@@ -91,4 +103,5 @@ void send_msg(int socket, string msg) {
     while (bytes_sent < msg_length) {
         bytes_sent += send(socket, msg.c_str() + bytes_sent, msg_length - bytes_sent, MSG_NOSIGNAL);
     }
+    _(cout << "send_msg >> end, time: " << get_milli_sec() << endl;)
 }

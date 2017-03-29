@@ -23,6 +23,8 @@
 #include <errno.h>
 #endif
 
+#include "helper.hpp"
+
 #include "opencv2/opencv.hpp"
 
 #include "apriltags/TagDetector.h"
