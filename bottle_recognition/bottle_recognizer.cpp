@@ -189,7 +189,7 @@ void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const
 
     Eigen::Vector3d translation;
     Eigen::Matrix3d rotation;
-    detection.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
+    detection.getRelativeTranslationRotation(0.05, 600, 600, 640/2, 480/2, 
         translation, rotation);
 
     Eigen::Matrix3d F;
