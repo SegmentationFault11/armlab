@@ -6,60 +6,6 @@
 #define _(x)
 #endif
 
-const double PI = 3.14159265358979323846;
-const double TWOPI = 2.0*PI;
-
-inline double standardRad(double t) {
-    _(cout << "standardRad >> start, time: " << get_milli_sec() << endl;)
-
-    if (t >= 0.) {
-        t = fmod(t+PI, TWOPI) - PI;
-    } else {
-        t = fmod(t-PI, -TWOPI) + PI;
-    }
-
-    _(cout << "standardRad >> end, time: " << get_milli_sec() << endl;)
-    return t;
-}
-
-void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double& roll) {
-    _(cout << "wRo_to_euler >> start, time: " << get_milli_sec() << endl;)
-
-    yaw = standardRad(atan2(wRo(1,0), wRo(0,0)));
-    double c = cos(yaw);
-    double s = sin(yaw);
-    pitch = standardRad(atan2(-wRo(2,0), wRo(0,0)*c + wRo(1,0)*s));
-    roll  = standardRad(atan2(wRo(0,2)*s - wRo(1,2)*c, -wRo(0,1)*s + wRo(1,1)*c));
-
-    _(cout << "wRo_to_euler >> end, time: " << get_milli_sec() << endl;)
-}
-
-float calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bottle_slot) {
-    _(cout << "calc_tag2slot_dist >> start, time: " << get_milli_sec() << endl;)
-
-    Eigen::Vector3d translation;
-    Eigen::Matrix3d rotation;
-    tag_location.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
-        translation, rotation);
-
-    Eigen::Matrix3d F;
-    F <<
-        1, 0,  0,
-        0,  -1,  0,
-        0,  0,  1;
-
-    Eigen::Matrix3d fixed_rot = F*rotation;
-    double yaw, pitch, roll;
-    wRo_to_euler(fixed_rot, yaw, pitch, roll);
-
-    float distance = sqrt(pow(translation(0) - bottle_slot.x, 2) 
-        + pow(translation(1) - bottle_slot.y, 2) 
-        + pow(translation(2) - bottle_slot.z, 2));
-
-    _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
-    return distance;
-}
-
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
 
@@ -274,5 +220,31 @@ void BottleRecognizer::reset_slot_occupancy() {
     }
 
     _(cout << "reset_slot_occupancy >> end, time: " << get_milli_sec() << endl;)
+}
+
+float BottleRecognizer::calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bottle_slot) {
+    _(cout << "calc_tag2slot_dist >> start, time: " << get_milli_sec() << endl;)
+
+    Eigen::Vector3d translation;
+    Eigen::Matrix3d rotation;
+    tag_location.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
+        translation, rotation);
+
+    Eigen::Matrix3d F;
+    F <<
+        1, 0,  0,
+        0,  -1,  0,
+        0,  0,  1;
+
+    Eigen::Matrix3d fixed_rot = F*rotation;
+    double yaw, pitch, roll;
+    wRo_to_euler(fixed_rot, yaw, pitch, roll);
+
+    float distance = sqrt(pow(translation(0) - bottle_slot.x, 2) 
+        + pow(translation(1) - bottle_slot.y, 2) 
+        + pow(translation(2) - bottle_slot.z, 2));
+
+    _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
+    return distance;
 }
 

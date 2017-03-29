@@ -70,5 +70,7 @@ public:
     void print_detection(AprilTags::TagDetection&) const;
 
     void reset_slot_occupancy();
+
+    float calc_tag2slot_dist(AprilTags::TagDetection, bottle_slot_t);
     
 } bottle_recognizer_t;
