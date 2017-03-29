@@ -56,6 +56,6 @@ public:
 
     string get_locations();
 
-    bool processImage(cv::Mat&, cv::Mat&, vector<bottle_t>&);
+    string assign_locations(vector<bottle_t>&);
     
 } bottle_recognizer_t;

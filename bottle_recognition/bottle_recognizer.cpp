@@ -24,38 +24,34 @@ void BottleRecognizer::setup() {
     video_capture.set(CV_CAP_PROP_FRAME_HEIGHT, 480);
 }
 
-
-
 string BottleRecognizer::get_locations() {
     cv::Mat image;
     cv::Mat image_gray;
 
-    vector<bottle_t> bottle_list;
+    vector<AprilTags::TagDetection> bottle_list;
 
+    unsigned num_repeats = 0;
     while (true) {
         video_capture >> image;
+        cv::cvtColor(image, image_gray, CV_BGR2GRAY);
 
-        bool error = processImage(image, image_gray, bottle_list);
+        bottle_list = tag_detector->extractTags(image_gray);
 
-        if (!error) {
+        if (any_of(bottle_list.begin(), bottle_list.end(), [](int i) {
+            return i.hammingDistance > 1;
+        })) {
+            if (num_repeats > 3) {
+                return "FATAL: Hamming Distance greater than 1.";
+            }
+
+            ++num_repeats;
+        }
+        else {
             break;
         }
     }
 
-    return "sf";
+    return assign_locations(bottle_list);
 }
 
-bool BottleRecognizer::processImage(cv::Mat& image, cv::Mat& image_gray, vector<bottle_t>& bottle_list) {
-    cv::cvtColor(image, image_gray, CV_BGR2GRAY);
 
-    vector<AprilTags::TagDetection> detections = tag_detector->extractTags(image_gray);
-
-    for (size_t i = 0; i < detections.size(); i++) {
-        detections[i].draw(image);
-    }
-    imshow(display_window_name, image);
-
-    (void) bottle_list;
-
-    return false;
-}
