@@ -270,7 +270,7 @@ void BottleRecognizer::reset_slot_occupancy() {
     _(cout << "reset_slot_occupancy >> start, time: " << get_milli_sec() << endl;)
 
     for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
-        delete iter->second;
+        iter->second->occupied = false;
     }
 
     _(cout << "reset_slot_occupancy >> end, time: " << get_milli_sec() << endl;)
