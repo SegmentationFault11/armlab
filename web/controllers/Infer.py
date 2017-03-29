@@ -1,11 +1,11 @@
-from flask import *
+from flask import Blueprint, session, render_template, request
 from AccessManagement import login_required
 from LcmClient import lcm_client
-from Utilities import check_text_input
-import os, logging
+from Utilities import get_text_input, logger
+import os, inspect
+
 
 infer = Blueprint('infer', __name__, template_folder='templates')
-
 
 @infer.route('/infer', methods=['GET', 'POST'])
 @login_required
@@ -26,16 +26,15 @@ def infer_route():
 			# When the "op" field is equal to "infer".
 			elif form['op'] == 'infer':
 				# # Classify the query.
-				speech_input = form['speech_input'] if 'speech_input' in form \
-					else ''
-				check_text_input(speech_input)
-				logging.debug('Speech input: %s' % speech_input)
+				speech_input = get_text_input(form['speech_input'] if \
+					'speech_input' in form else '')
+				logger.debug('Speech input: %s' % speech_input)
 				options['result'] = lcm_client.send_to_backend(username, speech_input)
-				logging.debug('Result: %s' % options['result'])
+				logger.debug('Result: %s' % options['result'])
 			else:
 				raise RuntimeError('Did you click the Ask button?')
 	except Exception as e:
-		logging.error(e)
+		logger.error(e)
 		options['error'] = e
 		return render_template('infer.html', **options)
 	# Display.
