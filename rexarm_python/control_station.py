@@ -72,6 +72,7 @@ def arm_handler(channel, data):
         ex.driveToBottle(current_hole_index)
         while (is_reached_current_bottle == 0):
             a = 1
+        print "CURRENT_HOLE_INDEX:", current_hole_index
         time.sleep(msg.stop_times[i])  
         is_reached_current_bottle = 0
     ex.driveToBottle(9) # Drive home   
@@ -330,17 +331,17 @@ class Gui(QtGui.QMainWindow):
     def check_if_reached(self):
         global is_reached_current_bottle
         desired_ee = FINAL_END_EFFECTORS[current_hole_index]
-        error_x = abs((end_effector[0,0] - desired_ee[0])/desired_ee[0]) * 100.0
-        error_y = abs((end_effector[1,0] - desired_ee[1])/desired_ee[1]) * 100.0
-        error_z = abs((end_effector[2,0] - desired_ee[2])/desired_ee[2]) * 100.0
-        # if LCM_DEBUG:
-        #     print "\nerror_x:", error_x
-        #     print "error_y:", error_y
-        #     print "error_z:", error_z
-        #     print "current_hole_index:", current_hole_index
-        #     print "desired_ee:", desired_ee
+        error_x = abs(end_effector[0,0] - desired_ee[0])
+        error_y = abs(end_effector[1,0] - desired_ee[1])
+        error_z = abs(end_effector[2,0] - desired_ee[2])
+        if LCM_DEBUG:
+            print "\nerror_x:", error_x
+            print "error_y:", error_y
+            print "error_z:", error_z
+            print "current_hole_index:", current_hole_index
+            print "desired_ee:", desired_ee
 
-        is_reached_current_bottle = ((error_x < 6) and (error_y < 5) and (error_z < 5)) 
+        is_reached_current_bottle = ((error_x < 0.01) and (error_y < 0.01) and (error_z < 0.01)) 
         # if is_reached_current_bottle:
         #     print "REACHED:", desired_ee
 
