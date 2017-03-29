@@ -7,11 +7,14 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <unordered_map>
 #include <list>
-#include <sys/time.h>
 #include <string>
+#include <algorithm>
 #include <cmath>
+#include <limits>
 #include <unistd.h>
+#include <sys/time.h>
 
 #ifdef EXPOSURE_CONTROL
 #include <libv4l2.h>
@@ -31,12 +34,14 @@
 
 using namespace std;
 
-typedef struct Bottle {
-    uint8_t id;
+typedef struct BottleSlot {
+    uint8_t slot_id;
     float x;
     float y;
+    float z;
+    bool occupied;
 
-} bottle_t;
+} bottle_slot_t;
 
 typedef class BottleRecognizer {
 private:
@@ -47,6 +52,8 @@ private:
 
     string display_window_name;
 
+    unordered_map<int, bottle_slot_t*> bottle_slots;
+
 public:
 
     BottleRecognizer();
@@ -56,6 +63,8 @@ public:
 
     string get_locations();
 
-    string assign_locations(vector<bottle_t>&);
+    string assign_locations(vector<AprilTags::TagDetection>&);
+
+    void print_detection(AprilTags::TagDetection&) const;
     
 } bottle_recognizer_t;
