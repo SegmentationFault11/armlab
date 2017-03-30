@@ -9,67 +9,36 @@
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
 
-    tag_detector = new AprilTags::TagDetector(AprilTags::tagCodes16h5);
+    tag_detector = new AprilTags::TagDetector(AprilTags::tagCodes36h11);
 
     display_window_name = "bottle_recognizer";
 
+    vector<pair<string, string>> slot_locations_properties;
+    try {
+        slot_locations_properties = read_params_file(slot_locations_file);
+    } 
+    catch (const runtime_error& re) {
+        cerr << re.what();
+        exit(1);
+    }
+
     for (int slot = 0; slot < 9; ++slot) {
         bottle_slots[slot] = new bottle_slot_t;
+        bottle_slots[slot]->occupied = false;
+    }
 
-        if (slot == 0) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
+    size_t num_params = slot_locations_properties.size();
+    for (size_t i = 0; i < num_params; ++i) {
+        int offset = i%3;
+        if (offset == 0) {
+            bottle_slots[i/3]->x = stof(slot_locations_properties[i].second);
         }
-        else if (slot == 1) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
+        else if (offset == 1) {
+            bottle_slots[i/3]->y = stof(slot_locations_properties[i].second);
         }
-        else if (slot == 2) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 3) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 4) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 5) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 6) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 7) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
-        else if (slot == 8) {
-            bottle_slots[slot]->x = 0.0;
-            bottle_slots[slot]->y = 0.0;
-            bottle_slots[slot]->z = 0.0;
-            bottle_slots[slot]->occupied = false;
-        }
+        else if (offset == 2) {
+            bottle_slots[i/3]->z = stof(slot_locations_properties[i].second);
+        }       
     }
 
     _(cout << "BottleRecognizer >> end, time: " << get_milli_sec() << endl;)
@@ -102,11 +71,7 @@ void BottleRecognizer::setup() {
     _(cout << "setup >> end, time: " << get_milli_sec() << endl;)
 }
 
-string BottleRecognizer::get_locations() {
-    _(cout << "get_locations >> start, time: " << get_milli_sec() << endl;)
-
-    reset_slot_occupancy();
-
+vector<AprilTags::TagDetection> BottleRecognizer::detect_tags() {
     cv::Mat image;
     cv::Mat image_gray;
 
@@ -122,7 +87,7 @@ string BottleRecognizer::get_locations() {
         if (std::any_of(bottle_list.begin(), bottle_list.end(), 
             [](AprilTags::TagDetection i) { return i.hammingDistance > 2; })) {
             if (num_repeats > 3) {
-                return "FATAL: Hamming Distance greater than 2.";
+                throw runtime_error("FATAL: Hamming Distance greater than 2.");
             }
 
             ++num_repeats;
@@ -133,7 +98,23 @@ string BottleRecognizer::get_locations() {
     }
 
     if (bottle_list.empty()) {
-        return "FATAL: No Bottles Detected";
+        throw runtime_error("FATAL: No Bottles Detected");
+    }
+
+    return bottle_list;
+}
+
+string BottleRecognizer::get_locations() {
+    _(cout << "get_locations >> start, time: " << get_milli_sec() << endl;)
+
+    reset_slot_occupancy();
+
+    vector<AprilTags::TagDetection> bottle_list;
+    try {
+        bottle_list = detect_tags();
+    }
+    catch (const runtime_error& re) {
+        return re.what();
     }
 
     for (size_t i = 0; i < bottle_list.size(); ++i) {
@@ -145,24 +126,68 @@ string BottleRecognizer::get_locations() {
 }
 
 string BottleRecognizer::calibrate_locations(string known_location_str) {
-    vector<pair<int, int>> known_locations = decode_calibration_str(known_location_str);
+    unordered_map<pair<int, int>> bottle_2_slot = decode_calibration_str(known_location_str);
 
-    
+    vector<AprilTags::TagDetection> bottle_list;
+    try {
+        bottle_list = detect_tags();
+    }
+    catch (const runtime_error& re) {
+        return "Calibration Failed: " + re.what();
+    }
 
-    return "Calibration Failed";
+    size_t num_bottles = bottle_list.size();
+    if (bottle_2_slot.size() != num_bottles) {
+        return "Calibration Failed: detected more bottles than given";
+    }
+
+    vector<pair<string, string>> slot_locations_properties = read_params_file(slot_locations_file);
+
+    vector<string> param_name(3);
+    param_name[0] = "_x"
+    param_name[1] = "_y"
+    param_name[2] = "_z"
+    for (size_t i = 0; i < num_bottles; ++i) {
+        int slot_num = -1;
+
+        Eigen::Vector3d translation;
+        Eigen::Matrix3d rotation;
+        bottle_list[i].getRelativeTranslationRotation(0.05, 600, 600, 640/2, 480/2, 
+            translation, rotation);
+
+        Eigen::Matrix3d F;
+        F <<
+            1, 0,  0,
+            0,  -1,  0,
+            0,  0,  1;
+
+        Eigen::Matrix3d fixed_rot = F*rotation;
+        double yaw, pitch, roll;
+        wRo_to_euler(fixed_rot, yaw, pitch, roll);
+
+        slot_num = bottle_2_slot.at(bottle_list[i].id);
+
+        for (int offset = 0; offset < 3; ++offset) {
+            slot_locations_properties[slot_num*3 + offset].second = to_string(translation(offset));
+            slot_locations_properties[slot_num*3 + offset].first = to_string(slot_num) + param_name[offset];
+        }
+    }
+
+    write_param_file(slot_location_file, slot_locations_properties);
+
+    return "Calibration Success: " + to_string(num_bottles) + " positions updated";
 }
 
-void BottleRecognizer::decode_calibration_str(string known_location_str) {
-    vector<pair<int, bottle_slot_t>> known_locations;
+unordered_map<int, int> BottleRecognizer::decode_calibration_str(string known_location_str) {
+    unordered_map<int, int> bottle_2_slot;
 
     vector<string> location_pairs = split_str(' ', known_location_str);
     size_t num_locations_given = location_pairs.size();
-    known_locations.resize();
 
     for (size_t i = 0; i < num_locations_given; ++i) {
         vector<string> pair_elems = split_str('|', location_pairs[i]);
 
-        known_locations[i] = make_pair(pair_elems[0], pair_elems[1]);
+        bottle_2_slot[pair_elems[1]] = pair_elems[0];
     }
 
     return location_pairs;
