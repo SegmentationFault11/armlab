@@ -63,8 +63,11 @@ vector<pair<string, string>> read_params_file(string param_file_name) {
 	string line;
 	vector<string> param_pair;
 	while (getline(infile, line)) {
-		param_pair = split_str(' ', line);
+		if (line.empty()) {
+			continue;
+		}
 
+		param_pair = split_str(' ', line);
 		if (param_pair.size() != 2) {
 			throw runtime_error("Paramfile in incorrect format, " + to_string(param_pair.size()) + " elements detected in a line");
 		}
@@ -73,4 +76,19 @@ vector<pair<string, string>> read_params_file(string param_file_name) {
 	}
 
 	return params_properties;
+}
+
+void write_param_file(string param_file_name, vector<pair<string, string>>& params_properties) {
+	ofstream params_file;
+	param_file.open(param_file_name, std::ofstream::out | std::ofstream::trunc);
+	if (!param_file) {
+		throw runtime_error("Unable to open param file: " + param_file_name);
+	}
+
+	size_t num_properties = params_properties.size();
+	for (size_t i = 0; i < num_properties; ++i) {
+		param_file << params_properties[i].first + " " + params_properties[i].second;
+	}
+
+	param_file.close();
 }
