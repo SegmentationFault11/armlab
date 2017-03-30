@@ -38,3 +38,15 @@ void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double
 
     _(cout << "wRo_to_euler >> end, time: " << get_milli_sec() << endl;)
 }
+
+// Split a string into a vector of strings using a delimitor
+vector<string> split_str(char delim, string s) {
+    stringstream ss;
+    ss.str(s);
+    vector<string> elems;
+    string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
