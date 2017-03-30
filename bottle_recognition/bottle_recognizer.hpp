@@ -65,6 +65,10 @@ public:
 
     string get_locations();
 
+    string calibrate_locations(string);
+
+    void BottleRecognizer::decode_calibration_str(string);
+
     string assign_locations(vector<AprilTags::TagDetection>&);
 
     void print_detection(AprilTags::TagDetection&) const;

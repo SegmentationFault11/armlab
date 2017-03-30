@@ -112,7 +112,6 @@ string BottleRecognizer::get_locations() {
 
     vector<AprilTags::TagDetection> bottle_list;
 
-    //cout << "pre" << endl;
     unsigned num_repeats = 0;
     while (true) {
         video_capture >> image;
@@ -133,8 +132,6 @@ string BottleRecognizer::get_locations() {
         }
     }
 
-    //cout << "post" << endl;
-
     if (bottle_list.empty()) {
         return "FATAL: No Bottles Detected";
     }
@@ -145,6 +142,30 @@ string BottleRecognizer::get_locations() {
 
     _(cout << "get_locations >> end, time: " << get_milli_sec() << endl;)
     return assign_locations(bottle_list);
+}
+
+string BottleRecognizer::calibrate_locations(string known_location_str) {
+    vector<pair<int, int>> known_locations = decode_calibration_str(known_location_str);
+
+    
+
+    return "Calibration Failed";
+}
+
+void BottleRecognizer::decode_calibration_str(string known_location_str) {
+    vector<pair<int, bottle_slot_t>> known_locations;
+
+    vector<string> location_pairs = split_str(' ', known_location_str);
+    size_t num_locations_given = location_pairs.size();
+    known_locations.resize();
+
+    for (size_t i = 0; i < num_locations_given; ++i) {
+        vector<string> pair_elems = split_str('|', location_pairs[i]);
+
+        known_locations[i] = make_pair(pair_elems[0], pair_elems[1]);
+    }
+
+    return location_pairs;
 }
 
 string BottleRecognizer::assign_locations(vector<AprilTags::TagDetection>& bottle_list) {
