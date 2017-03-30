@@ -39,7 +39,7 @@ int main() {
             response = recognizer.get_locations();
         }
         else if (msg.substr(0, 19) == "Calibrate Location ") {
-            response = recognizer.calibrate_locations(msg.substr(20, msg.size() - 20)));
+            response = recognizer.calibrate_locations(msg.substr(20, msg.size() - 20));
         }
         else {
             response = "Invalid Request";

@@ -62,7 +62,7 @@ vector<pair<string, string>> read_params_file(string param_file_name) {
 
 	string line;
 	vector<string> param_pair;
-	while (getline(infile, line)) {
+	while (getline(param_file, line)) {
 		if (line.empty()) {
 			continue;
 		}
@@ -79,7 +79,7 @@ vector<pair<string, string>> read_params_file(string param_file_name) {
 }
 
 void write_param_file(string param_file_name, vector<pair<string, string>>& params_properties) {
-	ofstream params_file;
+	ofstream param_file;
 	param_file.open(param_file_name, std::ofstream::out | std::ofstream::trunc);
 	if (!param_file) {
 		throw runtime_error("Unable to open param file: " + param_file_name);

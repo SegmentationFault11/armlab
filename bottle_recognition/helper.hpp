@@ -21,4 +21,4 @@ vector<string> split_str(char, string);
 
 vector<pair<string, string>> read_params_file(string);
 
-void write_param_file(vector<pair<string, string>>&);
+void write_param_file(string, vector<pair<string, string>>&);

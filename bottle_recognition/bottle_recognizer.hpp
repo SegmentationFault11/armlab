@@ -46,8 +46,6 @@ typedef struct BottleSlot {
 
 } bottle_slot_t;
 
-const string slot_locations_file = "slot_locations.properties";
-
 typedef class BottleRecognizer {
 private:
 
@@ -58,6 +56,8 @@ private:
     string display_window_name;
 
     unordered_map<int, bottle_slot_t*> bottle_slots;
+
+    string slot_locations_file;
 
 public:
 
@@ -70,7 +70,7 @@ public:
 
     string calibrate_locations(string);
 
-    unordered_map<int, int> BottleRecognizer::decode_calibration_str(string);
+    unordered_map<int, int> decode_calibration_str(string);
 
     vector<AprilTags::TagDetection> detect_tags();
 

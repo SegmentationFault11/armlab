@@ -13,6 +13,8 @@ BottleRecognizer::BottleRecognizer() {
 
     display_window_name = "bottle_recognizer";
 
+    slot_locations_file = "slot_locations.properties";
+
     vector<pair<string, string>> slot_locations_properties;
     try {
         slot_locations_properties = read_params_file(slot_locations_file);
@@ -126,14 +128,14 @@ string BottleRecognizer::get_locations() {
 }
 
 string BottleRecognizer::calibrate_locations(string known_location_str) {
-    unordered_map<pair<int, int>> bottle_2_slot = decode_calibration_str(known_location_str);
+    unordered_map<int, int> bottle_2_slot = decode_calibration_str(known_location_str);
 
     vector<AprilTags::TagDetection> bottle_list;
     try {
         bottle_list = detect_tags();
     }
     catch (const runtime_error& re) {
-        return "Calibration Failed: " + re.what();
+        return string("Calibration Failed: ") + string(re.what());
     }
 
     size_t num_bottles = bottle_list.size();
@@ -144,9 +146,9 @@ string BottleRecognizer::calibrate_locations(string known_location_str) {
     vector<pair<string, string>> slot_locations_properties = read_params_file(slot_locations_file);
 
     vector<string> param_name(3);
-    param_name[0] = "_x"
-    param_name[1] = "_y"
-    param_name[2] = "_z"
+    param_name[0] = "_x";
+    param_name[1] = "_y";
+    param_name[2] = "_z";
     for (size_t i = 0; i < num_bottles; ++i) {
         int slot_num = -1;
 
@@ -173,7 +175,7 @@ string BottleRecognizer::calibrate_locations(string known_location_str) {
         }
     }
 
-    write_param_file(slot_location_file, slot_locations_properties);
+    write_param_file(slot_locations_file, slot_locations_properties);
 
     return "Calibration Success: " + to_string(num_bottles) + " positions updated";
 }
@@ -187,10 +189,10 @@ unordered_map<int, int> BottleRecognizer::decode_calibration_str(string known_lo
     for (size_t i = 0; i < num_locations_given; ++i) {
         vector<string> pair_elems = split_str('|', location_pairs[i]);
 
-        bottle_2_slot[pair_elems[1]] = pair_elems[0];
+        bottle_2_slot[stoi(pair_elems[1])] = stoi(pair_elems[0]);
     }
 
-    return location_pairs;
+    return bottle_2_slot;
 }
 
 string BottleRecognizer::assign_locations(vector<AprilTags::TagDetection>& bottle_list) {
