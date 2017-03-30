@@ -34,11 +34,15 @@ int main() {
 
         string msg = read_msg(client_soc);
 
+        cout << "First 20 characters: " << msg.substr(0, 20) << endl;
+
+        cout << "After 20 characters: " << msg.substr(20, msg.size() - 20) << endl;
+
         string response;
         if (msg == "Get Locations") {
             response = recognizer.get_locations();
         }
-        else if (msg.substr(0, 19) == "Calibrate Location ") {
+        else if (msg.substr(0, 20) == "Calibrate Locations ") {
             response = recognizer.calibrate_locations(msg.substr(20, msg.size() - 20));
         }
         else {
