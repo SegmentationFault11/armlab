@@ -12,7 +12,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.print('r'); // signal ready
   if (Serial.available()) {
     char c = Serial.read();
     if (c == '0') {
