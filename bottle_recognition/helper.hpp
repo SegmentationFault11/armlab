@@ -2,6 +2,11 @@
 
 #include <cmath>
 #include <chrono>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <exception>
 
 #include "apriltags/TagDetector.h"
 #include "apriltags/Tag16h5.h"
@@ -13,3 +18,5 @@ double standardRad(double);
 void wRo_to_euler(const Eigen::Matrix3d&, double&, double&, double&);
 
 vector<string> split_str(char, string);
+
+vector<pair<string, string>> read_params_file(string);

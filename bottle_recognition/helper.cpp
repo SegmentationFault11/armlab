@@ -50,3 +50,27 @@ vector<string> split_str(char delim, string s) {
     }
     return elems;
 }
+
+vector<pair<string, string>> read_params_file(string param_file_name) {
+	ifstream param_file(param_file_name);
+
+	if (!param_file) {
+		throw runtime_error("Unable to read param file: " + param_file_name);
+	}
+
+	vector<pair<string, string>> params_properties;
+
+	string line;
+	vector<string> param_pair;
+	while (getline(infile, line)) {
+		param_pair = split_str(' ', line);
+
+		if (param_pair.size() != 2) {
+			throw runtime_error("Paramfile in incorrect format, " + to_string(param_pair.size()) + " elements detected in a line");
+		}
+
+		params_properties.push_back(make_pair(param_pair[0], param_pair[1]));
+	}
+
+	return params_properties;
+}
