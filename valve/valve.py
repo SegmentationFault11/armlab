@@ -2,7 +2,8 @@ from time import sleep
 from lcm import LCM
 import serial, sys, os, inspect
 
-VALID_INPUTS = ['1', '2', '3', '4', '5', '6', '7', '8']
+VALID_INPUTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', \
+'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
 
 ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
 ser.isOpen()
