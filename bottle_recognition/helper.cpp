@@ -87,7 +87,7 @@ void write_param_file(string param_file_name, vector<pair<string, string>>& para
 
 	size_t num_properties = params_properties.size();
 	for (size_t i = 0; i < num_properties; ++i) {
-		param_file << params_properties[i].first + " " + params_properties[i].second;
+		param_file << params_properties[i].first + " " + params_properties[i].second << "\n";
 	}
 
 	param_file.close();
