@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <exception>
+#include <stdexcept>
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -37,7 +39,6 @@
 using namespace std;
 
 typedef struct BottleSlot {
-    uint8_t slot_id;
     float x;
     float y;
     float z;
@@ -56,6 +57,8 @@ private:
 
     unordered_map<int, bottle_slot_t*> bottle_slots;
 
+    string slot_locations_file;
+
 public:
 
     BottleRecognizer();
@@ -64,6 +67,12 @@ public:
     void setup();
 
     string get_locations();
+
+    string calibrate_locations(string);
+
+    unordered_map<int, int> decode_calibration_str(string);
+
+    vector<AprilTags::TagDetection> detect_tags();
 
     string assign_locations(vector<AprilTags::TagDetection>&);
 

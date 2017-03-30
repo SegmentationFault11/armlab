@@ -38,3 +38,57 @@ void wRo_to_euler(const Eigen::Matrix3d& wRo, double& yaw, double& pitch, double
 
     _(cout << "wRo_to_euler >> end, time: " << get_milli_sec() << endl;)
 }
+
+// Split a string into a vector of strings using a delimitor
+vector<string> split_str(char delim, string s) {
+    stringstream ss;
+    ss.str(s);
+    vector<string> elems;
+    string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
+vector<pair<string, string>> read_params_file(string param_file_name) {
+	ifstream param_file(param_file_name);
+
+	if (!param_file) {
+		throw runtime_error("Unable to read param file: " + param_file_name);
+	}
+
+	vector<pair<string, string>> params_properties;
+
+	string line;
+	vector<string> param_pair;
+	while (getline(param_file, line)) {
+		if (line.empty()) {
+			continue;
+		}
+
+		param_pair = split_str(' ', line);
+		if (param_pair.size() != 2) {
+			throw runtime_error("Paramfile in incorrect format, " + to_string(param_pair.size()) + " elements detected in a line");
+		}
+
+		params_properties.push_back(make_pair(param_pair[0], param_pair[1]));
+	}
+
+	return params_properties;
+}
+
+void write_param_file(string param_file_name, vector<pair<string, string>>& params_properties) {
+	ofstream param_file;
+	param_file.open(param_file_name, std::ofstream::out | std::ofstream::trunc);
+	if (!param_file) {
+		throw runtime_error("Unable to open param file: " + param_file_name);
+	}
+
+	size_t num_properties = params_properties.size();
+	for (size_t i = 0; i < num_properties; ++i) {
+		param_file << params_properties[i].first + " " + params_properties[i].second;
+	}
+
+	param_file.close();
+}

@@ -34,12 +34,18 @@ int main() {
 
         string msg = read_msg(client_soc);
 
-        string locations = "Invalid Request";
+        string response;
         if (msg == "Get Locations") {
-            locations = recognizer.get_locations();
+            response = recognizer.get_locations();
+        }
+        else if (msg.substr(0, 19) == "Calibrate Location ") {
+            response = recognizer.calibrate_locations(msg.substr(20, msg.size() - 20));
+        }
+        else {
+            response = "Invalid Request";
         }
 
-        send_msg(client_soc, locations);
+        send_msg(client_soc, response);
     }
 
 
