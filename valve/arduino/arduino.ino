@@ -39,31 +39,31 @@ void loop() {
       digitalWrite(8, LOW);
     } 
     else if (c == '4') {
-      digitalWrite(9, LOW);
+      digitalWrite(9, HIGH);
     } 
     else if (c == 'e') {
       digitalWrite(9, LOW);
     } 
     else if (c == '5') {
-      digitalWrite(10, LOW);
+      digitalWrite(10, HIGH);
     } 
     else if (c == 'f') {
       digitalWrite(10, LOW);
     }
     else if (c == '6') {
-      digitalWrite(11, LOW);
+      digitalWrite(11, HIGH);
     } 
     else if (c == 'g') {
       digitalWrite(11, LOW);
     } 
     else if (c == '7') {
-      digitalWrite(12, LOW);
+      digitalWrite(12, HIGH);
     } 
     else if (c == 'h') {
       digitalWrite(12, LOW);
     } 
     else if (c == '8') {
-      digitalWrite(13, LOW);
+      digitalWrite(13, HIGH);
     } 
     else if (c == 'i') {
       digitalWrite(13, LOW);
