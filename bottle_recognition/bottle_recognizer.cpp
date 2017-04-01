@@ -10,6 +10,13 @@
 #define EXPOSURE_CONTROL 
 #endif
 
+#ifdef __APPLE__
+#define EXPOSURE_CONTROL 
+#define CAMERA_ID 1
+#elif
+#define CAMERA_ID 0
+#endif
+
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
 
@@ -74,7 +81,7 @@ void BottleRecognizer::setup() {
 #endif 
 
     // find and open a USB camera (built in laptop camera, web cam etc)
-    video_capture = cv::VideoCapture(0);
+    video_capture = cv::VideoCapture(CAMERA_ID);
     if(!video_capture.isOpened()) {
         cerr << "ERROR: Can't find video device " << 1 << "\n";
         exit(1);
@@ -277,7 +284,7 @@ float BottleRecognizer::calc_tag2slot_dist(AprilTags::TagDetection tag_location,
 tag_pose_t BottleRecognizer::get_tag_pose(AprilTags::TagDetection detection) const {
     Eigen::Vector3d translation;
     Eigen::Matrix3d rotation;
-    detection.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
+    detection.getRelativeTranslationRotation(0.166, 600, 600, 640, 480, 
         translation, rotation);
 
     Eigen::Matrix3d F;

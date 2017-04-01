@@ -3,7 +3,7 @@ import sys
 
 def get_bottle_locations(ip = 'localhost'):
 	camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	camera_socket.connect(('localhost', 12000))
+	camera_socket.connect((ip, 12000))
 
 	camera_socket.send("Get Locations" + '\0')
 
