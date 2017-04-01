@@ -34,7 +34,9 @@ elif [ $OPERATING_SYSTEM == "Linux" ]; then
 
 	INCLUDE_PATH="-I/usr/include -I/usr/include/eigen3 "
 
-	printf "Compiling Apriltag library.... "
+    printf "Adding library path(s)........ "
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+	printf "DONE\nCompiling Apriltag library.... "
 	g++ -c *.cc $INCLUDE_PATH
 	printf "DONE\nArchiving .o files............ "
 	ar rcs libapriltags.a *.o
