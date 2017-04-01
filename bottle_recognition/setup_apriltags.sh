@@ -5,7 +5,7 @@ printf "\nApriltag setup started\n\n"
 cd apriltags
 
 # Removing .o and .a files
-printf "Compiling Apriltag library.... "
+printf "Removing remnant files........ "
 if [[ -f *.o ]]; then
 	rm *.o
 fi
@@ -32,7 +32,7 @@ if [ $OPERATING_SYSTEM == "Darwin" ]; then
 elif [ $OPERATING_SYSTEM == "Linux" ]; then
 	# echo "This is a Linux system"
 
-	INCLUDE_PATH="-I/usr/local/include -I/usr/local/include/eigen3 "
+	INCLUDE_PATH="-I/usr/include -I/usr/include/eigen3 "
 
 	printf "Compiling Apriltag library.... "
 	g++ -c *.cc $INCLUDE_PATH
