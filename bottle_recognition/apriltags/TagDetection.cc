@@ -98,10 +98,10 @@ Eigen::Matrix4d TagDetection::getRelativeTransform(double tag_size, double fx, d
                            0,  0,  1);
   cv::Vec4f distParam(0,0,0,0); // all 0?
   cv::solvePnP(objPts, imgPts, cameraMatrix, distParam, rvec, tvec);
-  cv::Matx33d r;
+  cv::Mat r;
   cv::Rodrigues(rvec, r);
   Eigen::Matrix3d wRo;
-  wRo << r(0,0), r(0,1), r(0,2), r(1,0), r(1,1), r(1,2), r(2,0), r(2,1), r(2,2);
+  wRo << r.at<double>(0,0), r.at<double>(0,1), r.at<double>(0,2), r.at<double>(1,0), r.at<double>(1,1), r.at<double>(1,2), r.at<double>(2,0), r.at<double>(2,1), r.at<double>(2,2);
 
   Eigen::Matrix4d T; 
   T.topLeftCorner(3,3) = wRo;
