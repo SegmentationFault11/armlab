@@ -1,5 +1,6 @@
 .DS_Store
 *.pyc
 *.o
+*.a
 *.swp
 bottle_recognition/bottle_recognizer
