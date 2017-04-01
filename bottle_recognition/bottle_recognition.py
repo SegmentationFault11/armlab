@@ -15,3 +15,5 @@ def calibrate_slot_locations(calibration_string):
 	camera_socket.send("Calibrate Locations " + calibration_string + '\0')
 
 	print camera_socket.recv(100);
+
+get_bottle_locations();

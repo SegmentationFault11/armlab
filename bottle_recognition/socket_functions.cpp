@@ -90,8 +90,6 @@ string read_msg(int socket) {
         }
     }
 
-    cout << "Recieved: " << msg << endl;
-
     _(cout << "read_msg >> end, time: " << get_milli_sec() << endl;)
     return msg;
 }
