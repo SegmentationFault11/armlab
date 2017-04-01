@@ -74,7 +74,7 @@ void BottleRecognizer::setup() {
 #endif 
 
     // find and open a USB camera (built in laptop camera, web cam etc)
-    video_capture = cv::VideoCapture(1);
+    video_capture = cv::VideoCapture(0);
     if(!video_capture.isOpened()) {
         cerr << "ERROR: Can't find video device " << 1 << "\n";
         exit(1);
