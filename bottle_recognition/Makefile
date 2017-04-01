@@ -10,23 +10,32 @@
 # Executable
 	EXECUTABLE = bottle_recognizer
 
-# Include Paths
-	INCLUDE_PATHS = -I/usr/local/include -I/usr/local/include/eigen3
+# Mac Include Paths
+	MAC_INCLUDE_PATHS = -I/usr/local/include -I/usr/local/include/eigen3
+
+# Linux Include Paths
+	LINUX_INCLUDE_PATHS = -I/usr/include -I/usr/include/eigen3
 
 # Library Paths
 	LIBRARY_PATHS = -L/usr/local/lib
 
-# Linkers
-	LINKERS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_stitching
+# Mac Linkers
+	MAC_LINKERS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_calib3d
+
+# Linux Linkers
+	LINUX_LINKERS = $(MAC_LINKERS) -lopencv_videoio	
 
 # Optimization Level
 	OX = -O3
 
 # Compilation Flags
-	COMPILATION_FLAGS = -Wall -Werror -Wextra -pthread -ldl
+	COMPILATION_FLAGS = -Wall -Wextra -pthread -ldl
 
-all:
-	$(CXX) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(OBJECTS) $(TARGETS) -o $(EXECUTABLE)
-	
+mac:
+	$(CXX) -o $(EXECUTABLE) $(COMPILATION_FLAGS) $(OX) $(TARGETS) $(OBJECTS) $(MAC_INCLUDE_PATHS) $(LIBRARY_PATHS) $(MAC_LINKERS)
+
+linux:
+	$(CXX) -o $(EXECUTABLE) $(COMPILATION_FLAGS) $(OX) $(TARGETS) $(OBJECTS) $(LINUX_INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINUX_LINKERS)
+
 debug:
-	$(CXX) -DDEBUG $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKERS) $(OX) $(COMPILATION_FLAGS) $(OBJECTS) $(TARGETS) -o $(EXECUTABLE)
+	$(CXX) -o $(EXECUTABLE) -DDEBUG $(COMPILATION_FLAGS) $(OX) $(TARGETS) $(OBJECTS) $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(MAC_LINKERS)

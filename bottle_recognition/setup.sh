@@ -30,7 +30,15 @@ if [ $OPERATING_SYSTEM == "Darwin" ]; then
 	printf "DONE\n"
 
 elif [ $OPERATING_SYSTEM == "Linux" ]; then
-	echo "This is a Linux system"
+	# echo "This is a Linux system"
+
+	INCLUDE_PATH="-I/usr/local/include -I/usr/local/include/eigen3 "
+
+	printf "Compiling Apriltag library.... "
+	g++ -c *.cc $INCLUDE_PATH
+	printf "DONE\nArchiving .o files............ "
+	ar rcs libapriltags.a *.o
+	printf "DONE\n"
 fi
 
 # Removing .o files
