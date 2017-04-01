@@ -6,6 +6,10 @@
 #define _(x)
 #endif
 
+#ifdef __LINUX__
+#define EXPOSURE_CONTROL 
+#endif
+
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
 
@@ -55,6 +59,19 @@ void BottleRecognizer::setup() {
     _(cout << "setup >> start, time: " << get_milli_sec() << endl;)
 
     cv::namedWindow(display_window_name, 1);
+
+#ifdef EXPOSURE_CONTROL
+    // manually setting camera exposure settings; OpenCV/v4l1 doesn't
+    // support exposure control; so here we manually use v4l2 before
+    // opening the device via OpenCV; confirmed to work with Logitech
+    // C270; try exposure=20, gain=100, brightness=150
+
+    string video_str = "/dev/video0";
+    video_str[10] = '0' + 1;
+    int device = v4l2_open(video_str.c_str(), O_RDWR | O_NONBLOCK);
+
+    v4l2_close(device);
+#endif 
 
     // find and open a USB camera (built in laptop camera, web cam etc)
     video_capture = cv::VideoCapture(0);
