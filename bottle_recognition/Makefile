@@ -5,7 +5,7 @@
 	OBJECTS = apriltags/libapriltags.a
 
 # Designated compiler
-	CXX = g++ -std=c++11
+	CXX = g++ -std=c++0x
 
 # Executable
 	EXECUTABLE = bottle_recognizer
