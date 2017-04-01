@@ -152,25 +152,12 @@ string BottleRecognizer::calibrate_locations(string known_location_str) {
     for (size_t i = 0; i < num_bottles; ++i) {
         int slot_num = -1;
 
-        Eigen::Vector3d translation;
-        Eigen::Matrix3d rotation;
-        bottle_list[i].getRelativeTranslationRotation(0.05, 600, 600, 640/2, 480/2, 
-            translation, rotation);
-
-        Eigen::Matrix3d F;
-        F <<
-            1, 0,  0,
-            0,  -1,  0,
-            0,  0,  1;
-
-        Eigen::Matrix3d fixed_rot = F*rotation;
-        double yaw, pitch, roll;
-        wRo_to_euler(fixed_rot, yaw, pitch, roll);
+        tag_pose_t tag_pose = get_tag_pose(bottle_list[i]);
 
         slot_num = bottle_2_slot.at(bottle_list[i].id);
 
         for (int offset = 0; offset < 3; ++offset) {
-            slot_locations_properties[slot_num*3 + offset].second = to_string(translation(offset));
+            slot_locations_properties[slot_num*3 + offset].second = to_string(tag_pose.translation(offset));
             slot_locations_properties[slot_num*3 + offset].first = to_string(slot_num) + param_name[offset];
         }
     }
@@ -235,28 +222,15 @@ void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const
     cout << "  Id: " << detection.id
              << " (Hamming: " << detection.hammingDistance << ")";
 
-    Eigen::Vector3d translation;
-    Eigen::Matrix3d rotation;
-    detection.getRelativeTranslationRotation(0.05, 600, 600, 640/2, 480/2, 
-        translation, rotation);
+    tag_pose_t tag_pose = get_tag_pose(detection);
 
-    Eigen::Matrix3d F;
-    F <<
-        1, 0,  0,
-        0,  -1,  0,
-        0,  0,  1;
-
-    Eigen::Matrix3d fixed_rot = F*rotation;
-    double yaw, pitch, roll;
-    wRo_to_euler(fixed_rot, yaw, pitch, roll);
-
-    cout << "  distance=" << translation.norm()
-             << "m, x=" << translation(0)
-             << ", y=" << translation(1)
-             << ", z=" << translation(2)
-             << ", yaw=" << yaw
-             << ", pitch=" << pitch
-             << ", roll=" << roll
+    cout << "  distance=" << tag_pose.translation.norm()
+             << "m, x=" << tag_pose.translation(0)
+             << ", y=" << tag_pose.translation(1)
+             << ", z=" << tag_pose.translation(2)
+             << ", yaw=" << tag_pose.yaw
+             << ", pitch=" << tag_pose.pitch
+             << ", roll=" << tag_pose.roll
              << endl;
 }
 
@@ -273,9 +247,20 @@ void BottleRecognizer::reset_slot_occupancy() {
 float BottleRecognizer::calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bottle_slot) {
     _(cout << "calc_tag2slot_dist >> start, time: " << get_milli_sec() << endl;)
 
+    tag_pose_t tag_pose = get_tag_pose(tag_location);
+
+    float distance = sqrt(pow(tag_pose.translation(0) - bottle_slot.x, 2) 
+        + pow(tag_pose.translation(1) - bottle_slot.y, 2) 
+        + pow(tag_pose.translation(2) - bottle_slot.z, 2));
+
+    _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
+    return distance;
+}
+
+tag_pose_t BottleRecognizer::get_tag_pose(AprilTags::TagDetection detection) const {
     Eigen::Vector3d translation;
     Eigen::Matrix3d rotation;
-    tag_location.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
+    detection.getRelativeTranslationRotation(0.166, 600, 600, 640/2, 480/2, 
         translation, rotation);
 
     Eigen::Matrix3d F;
@@ -288,11 +273,11 @@ float BottleRecognizer::calc_tag2slot_dist(AprilTags::TagDetection tag_location,
     double yaw, pitch, roll;
     wRo_to_euler(fixed_rot, yaw, pitch, roll);
 
-    float distance = sqrt(pow(translation(0) - bottle_slot.x, 2) 
-        + pow(translation(1) - bottle_slot.y, 2) 
-        + pow(translation(2) - bottle_slot.z, 2));
+    tag_pose_t tag_pose;
+    tag_pose.translation = translation;
+    tag_pose.yaw = yaw;
+    tag_pose.pitch = pitch;
+    tag_pose.roll = roll;
 
-    _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
-    return distance;
+    return tag_pose;
 }
-

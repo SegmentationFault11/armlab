@@ -46,6 +46,14 @@ typedef struct BottleSlot {
 
 } bottle_slot_t;
 
+typedef struct TagPose {
+    Eigen::Vector3d translation;
+    float distance;
+    float yaw;
+    float pitch;
+    float roll;
+} tag_pose_t;
+
 typedef class BottleRecognizer {
 private:
 
@@ -70,6 +78,8 @@ public:
 
     string calibrate_locations(string);
 
+private:
+
     unordered_map<int, int> decode_calibration_str(string);
 
     vector<AprilTags::TagDetection> detect_tags();
@@ -81,5 +91,7 @@ public:
     void reset_slot_occupancy();
 
     float calc_tag2slot_dist(AprilTags::TagDetection, bottle_slot_t);
+
+    tag_pose_t get_tag_pose(AprilTags::TagDetection) const;
     
 } bottle_recognizer_t;
