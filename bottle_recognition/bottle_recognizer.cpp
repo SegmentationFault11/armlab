@@ -16,6 +16,8 @@
 #define CAMERA_ID 0
 #endif
 
+atomic<bool> grabber_go;
+
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
 
@@ -60,6 +62,9 @@ BottleRecognizer::BottleRecognizer() {
 BottleRecognizer::~BottleRecognizer() {
     _(cout << "~BottleRecognizer >> called, time: " << get_milli_sec() << endl;)
     delete tag_detector;
+
+    grabber_go = false;
+    grabber_th.join();
 }
 
 void BottleRecognizer::setup() {
@@ -93,6 +98,9 @@ void BottleRecognizer::setup() {
     for (auto iter = bottle_slots.begin(); iter != bottle_slots.end(); ++iter) {
         iter->second->occupied = false;
     }
+
+    grabber_go = true;
+    grabber_th = thread(buffer_grabber, video_capture);
 
     _(cout << "setup >> end, time: " << get_milli_sec() << endl;)
 }
@@ -298,4 +306,11 @@ tag_pose_t BottleRecognizer::get_tag_pose(AprilTags::TagDetection detection) con
     tag_pose.roll = roll;
 
     return tag_pose;
+}
+
+void buffer_grabber(cv::VideoCapture video_capture) {
+    while (grabber_go) {
+        video_capture.grab();
+        usleep(100000);
+    }
 }

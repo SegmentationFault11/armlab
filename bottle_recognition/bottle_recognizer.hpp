@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <thread>
+#include <atomic>
 #include <exception>
 #include <stdexcept>
 #include <unistd.h>
@@ -66,6 +68,8 @@ private:
 
     string slot_locations_file;
 
+    thread grabber_th;
+
 public:
 
     BottleRecognizer();
@@ -94,3 +98,5 @@ private:
     tag_pose_t get_tag_pose(AprilTags::TagDetection) const;
     
 } bottle_recognizer_t;
+
+void buffer_grabber(cv::VideoCapture);
