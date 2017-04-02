@@ -1,6 +1,6 @@
 from Database import database
 import lcm, os, inspect, sys, socket
-from Config import SEC_PER_ML, INGREDIENTS, BOTTLES
+from Config import SEC_PER_ML, INGREDIENTS
 from Utilities import logger
 # Import LCM packages
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(
@@ -67,7 +67,7 @@ class LcmClient(object):
 		rtn = []
 		for ingred_name in ingred_names:
 			if not ingred_name in ingred_hole_map:
-				raise RuntimeError(ingred_name + ' is not found in stock')
+				raise RuntimeError(ingred_name + ' is not in stock')
 			rtn.append(ingred_hole_map[ingred_name])
 		return rtn
 
@@ -89,9 +89,9 @@ class LcmClient(object):
 				assert(c == '|')
 				state = 3
 			elif state == 3:
-				bottle_id = int(c)
-				assert(bottle_id in BOTTLES)
-				ingred_name = INGREDIENTS[bottle_id]
+				ingred_id = int(c)
+				assert(ingred_id >= 0 and ingred_id < len(INGREDIENTS))
+				ingred_name = INGREDIENTS[ingred_id]
 				state = 4
 			elif state == 4:
 				assert(c == '}')
