@@ -32,19 +32,19 @@ LINK4_LENGTH = 7 / 100 # TODO: change this to our gripper
 cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Lengths of the links
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
-IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
+IK_DEBUG = 0 # Change to '1' to print out stuff for Inverse Kinematics
 LCM_DEBUG = 1 # Change to '1' to print out stuff for LCM
 
 FINAL_END_EFFECTORS = [
-    [0.10125143894897511, -0.12094915633605999, 0.20061180478670984, -0.15],
-    [0.021227449684100921, -0.16329518003527718, 0.20061180478670984, -0.15],
-    [-0.070747536793389756, -0.14850850805866353, 0.20061180478670984, -0.15],
-    [-0.13855895338992918, -0.088664577840474698, 0.20061180478670984, -0.15],
-    [-0.16497080154134619, 0.00050624926499197244, 0.20061180478670984, -0.15],
-    [-0.14187864044490325, 0.084178815832835346, 0.20061180478670984, -0.15],
-    [-0.072391107920756079, 0.14014306904605794, 0.20061180478670984, -0.15],
-    [0.012632140474910281, 0.15722907280355261, 0.20061180478670984, -0.15],
-    [0.093447433342095709, 0.12707529071151988, 0.20061180478670984, -0.15],
+    [0.10125143894897511, -0.12094915633605999, 0.18061180478670984, -0.15],
+    [0.021227449684100921, -0.16329518003527718, 0.18061180478670984, -0.15],
+    [-0.070747536793389756, -0.14850850805866353, 0.18061180478670984, -0.15],
+    [-0.13855895338992918, -0.088664577840474698, 0.18061180478670984, -0.15],
+    [-0.16497080154134619, 0.00050624926499197244, 0.18061180478670984, -0.15],
+    [-0.14187864044490325, 0.084178815832835346, 0.18061180478670984, -0.15],
+    [-0.072391107920756079, 0.14014306904605794, 0.18061180478670984, -0.15],
+    [0.012632140474910281, 0.15722907280355261, 0.18061180478670984, -0.15],
+    [0.093447433342095709, 0.12707529071151988, 0.18061180478670984, -0.15],
     [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15] # HOME
 ]
 
@@ -57,24 +57,29 @@ from lcm_python import arm_command_t
 
 current_hole_index = -1
 is_reached_current_bottle = 0
-current_end_effector = [0.0,0.0, 0.0]
+
 
 def arm_handler(channel, data):
-    global current_hole_index, is_reached_current_bottle, current_end_effector
+    global current_hole_index, is_reached_current_bottle
     msg = arm_command_t.arm_command_t.decode(data)
     if LCM_DEBUG:
         print "\nMessage Received"
         print "Size:", msg.size
         print "Hole Indices:", msg.hole_indices
         print "Stop Times:", msg.stop_times
+    hole_indices = []
     for i in range(msg.size):
-        current_hole_index = msg.hole_indices[i]
-        ex.driveToBottle(FINAL_END_EFFECTORS[current_hole_index])
-
+        hole_indices.append(msg.hole_indices[i])
+    hole_indices_sorted = sorted(hole_indices)
+    print "hole_indices:", hole_indices
+    print "sorted:", hole_indices_sorted
+    for i in range(msg.size):
+        current_hole_index = hole_indices_sorted[i]
+        ex.driveToBottle(current_hole_index)
         while (is_reached_current_bottle == 0):
             a = 1
         print "CURRENT_HOLE_INDEX:", current_hole_index
-        time.sleep(msg.stop_times[i])  
+        time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
         is_reached_current_bottle = 0
     ex.driveToBottle(9) # Drive home   
 
@@ -331,17 +336,16 @@ class Gui(QtGui.QMainWindow):
 
     def check_if_reached(self):
         global is_reached_current_bottle
-        desired_ee = current_end_effector
-        print 'TEST',desired_ee
+        desired_ee = FINAL_END_EFFECTORS[current_hole_index]
         error_x = abs(end_effector[0,0] - desired_ee[0])
         error_y = abs(end_effector[1,0] - desired_ee[1])
         error_z = abs(end_effector[2,0] - desired_ee[2])
-        if LCM_DEBUG:
-            print "\nerror_x:", error_x
-            print "error_y:", error_y
-            print "error_z:", error_z
-            print "current_hole_index:", current_hole_index
-            print "desired_ee:", desired_ee
+        #if LCM_DEBUG:
+            # print "\nerror_x:", error_x
+            # print "error_y:", error_y
+            # print "error_z:", error_z
+            # print "current_hole_index:", current_hole_index
+            # print "desired_ee:", desired_ee
 
         is_reached_current_bottle = ((error_x < 0.01) and (error_y < 0.01) and (error_z < 0.01)) 
         # if is_reached_current_bottle:
@@ -460,10 +464,8 @@ class Gui(QtGui.QMainWindow):
     def driveToHome(self):   
         self.driveToBottle(9)                     
 
-    def driveToBottle(self, end_effector):
-        global current_end_effector
-        current_end_effector = end_effector
-        result_angles = self.rex.rexarm_ik(end_effector, cfg)
+    def driveToBottle(self, index_of_ee):
+        result_angles = self.rex.rexarm_ik(FINAL_END_EFFECTORS[index_of_ee], cfg)
 
         self.rex.joint_angles[0] = result_angles[0]
         self.rex.joint_angles[1] = -1*result_angles[1]
