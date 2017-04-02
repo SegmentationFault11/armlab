@@ -57,10 +57,10 @@ from lcm_python import arm_command_t
 
 current_hole_index = -1
 is_reached_current_bottle = 0
-
+current_end_effector = [0.0,0.0, 0.0]
 
 def arm_handler(channel, data):
-    global current_hole_index, is_reached_current_bottle
+    global current_hole_index, is_reached_current_bottle, current_end_effector
     msg = arm_command_t.arm_command_t.decode(data)
     if LCM_DEBUG:
         print "\nMessage Received"
@@ -69,7 +69,8 @@ def arm_handler(channel, data):
         print "Stop Times:", msg.stop_times
     for i in range(msg.size):
         current_hole_index = msg.hole_indices[i]
-        ex.driveToBottle(current_hole_index)
+        ex.driveToBottle(FINAL_END_EFFECTORS[current_hole_index])
+
         while (is_reached_current_bottle == 0):
             a = 1
         print "CURRENT_HOLE_INDEX:", current_hole_index
@@ -330,7 +331,8 @@ class Gui(QtGui.QMainWindow):
 
     def check_if_reached(self):
         global is_reached_current_bottle
-        desired_ee = FINAL_END_EFFECTORS[current_hole_index]
+        desired_ee = current_end_effector
+        print 'TEST',desired_ee
         error_x = abs(end_effector[0,0] - desired_ee[0])
         error_y = abs(end_effector[1,0] - desired_ee[1])
         error_z = abs(end_effector[2,0] - desired_ee[2])
@@ -458,8 +460,10 @@ class Gui(QtGui.QMainWindow):
     def driveToHome(self):   
         self.driveToBottle(9)                     
 
-    def driveToBottle(self, index_of_ee):
-        result_angles = self.rex.rexarm_ik(FINAL_END_EFFECTORS[index_of_ee], cfg)
+    def driveToBottle(self, end_effector):
+        global current_end_effector
+        current_end_effector = end_effector
+        result_angles = self.rex.rexarm_ik(end_effector, cfg)
 
         self.rex.joint_angles[0] = result_angles[0]
         self.rex.joint_angles[1] = -1*result_angles[1]
