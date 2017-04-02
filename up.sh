@@ -18,12 +18,12 @@ tmux split-window -v
 # Send commands.
 tmux select-pane -t 0
 tmux send-keys 'cd bin' C-m
-tmux send-keys 'cd ./rexarm_driver' C-m
+tmux send-keys './rexarm_driver' C-m
 tmux select-pane -t 1
 tmux send-keys 'cd rexarm_python' C-m
 tmux send-keys 'python control_station.py' C-m
 tmux select-pane -t 2
-tmux send-keys 'cd bin' C-m
+tmux send-keys 'cd bottle_recognition' C-m
 tmux send-keys './bottle_recognizer' C-m
 tmux select-pane -t 3
 tmux send-keys 'cd web' C-m
