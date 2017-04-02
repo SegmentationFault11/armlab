@@ -7,9 +7,7 @@ The web module performs the following functionalities:
 - Classifies and forwards front-end requests to the appropriate services.
 - Returns requested information to the front end.
 
-Specifically, `app.py` starts the Flask server (listening to front end)
-and web socket ASR router (listening to front end).
-
+Specifically, `app.py` starts the Flask server (listening to front end).
 
 ## Major Dependencies
 
@@ -50,6 +48,6 @@ For OS X,
 mongod
 ```
 
-Open your browser and go to `http://localhost:3000/`. 
+Open your Chrome (!) browser and go to `http://localhost:3000/`. 
 Notice that the command center assumes that the services specified in `controllers/Config.py` are running.
 Make sure to start those services as well.
