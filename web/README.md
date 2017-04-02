@@ -26,7 +26,6 @@ configuration file (`Config.py`), etc.
 - `static/`: static contents of the web front end
 - `templates/`: html Jinja templates
 - `app.py`: top-level module
-- `clear_db.sh`: script to clear MongoDB (only for testing)
 
 ## Run
 
