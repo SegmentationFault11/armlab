@@ -36,7 +36,16 @@ In the terminal, start the Flask server,
 python app.py
 ```
 
-In another terminal, start the MongoDB,
+In another terminal, start the MongoDB.
+
+For Ubuntu:
+
+
+```
+sudo service mongod start
+```
+
+For OS X,
 
 ```
 mongod
