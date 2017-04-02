@@ -11,7 +11,6 @@
 #endif
 
 #ifdef __APPLE__
-#define EXPOSURE_CONTROL 
 #define CAMERA_ID 1
 #else
 #define CAMERA_ID 0
