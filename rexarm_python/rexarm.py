@@ -13,7 +13,7 @@ D2R = PI/180.0
 ANGLE_TOL = 2*PI/180.0 
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
-IK_DEBUG = 1 # Change to '1' to print out stuff for Inverse Kinematics
+IK_DEBUG = 0 # Change to '1' to print out stuff for Inverse Kinematics
 
 """ Rexarm Class """
 class Rexarm():
