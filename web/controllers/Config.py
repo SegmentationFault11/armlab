@@ -5,12 +5,10 @@ from Service import Service
 MAX_DOC_NUM_PER_USER = 30 # non-negative inetegr
 
 # Pre-configured services.
-# The ThriftClient assumes that the following services are running.
-# Host IP addresses are resolved dynamically: 
-# either set by Kubernetes or localhost.
+# The LcmClient assumes that the following services are running.
 SERVICES = { 
-	'ARM' : Service('ARM', 8083, 'text', 'text'),
-	'CAMERA' : Service('CAMERA', 12000, 'image', None)
+	'ARM' : Service('ARM', 'localhost', 'LCM port'),
+	'CAMERA' : Service('CAMERA', 'localhost', 12000)
 	}
 
 # Ingredients.
