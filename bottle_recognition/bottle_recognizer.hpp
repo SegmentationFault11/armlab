@@ -41,7 +41,6 @@ using namespace std;
 typedef struct BottleSlot {
     float x;
     float y;
-    float z;
     bool occupied;
 
 } bottle_slot_t;

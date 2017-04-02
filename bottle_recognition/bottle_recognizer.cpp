@@ -41,16 +41,17 @@ BottleRecognizer::BottleRecognizer() {
 
     size_t num_params = slot_locations_properties.size();
     for (size_t i = 0; i < num_params; ++i) {
-        int offset = i%3;
+        int offset = i%2;
         if (offset == 0) {
-            bottle_slots[i/3]->x = stof(slot_locations_properties[i].second);
+            bottle_slots[i/2]->x = stof(slot_locations_properties[i].second);
         }
         else if (offset == 1) {
-            bottle_slots[i/3]->y = stof(slot_locations_properties[i].second);
-        }
-        else if (offset == 2) {
-            bottle_slots[i/3]->z = stof(slot_locations_properties[i].second);
-        }       
+            bottle_slots[i/2]->y = stof(slot_locations_properties[i].second);
+        }      
+    }
+
+    for (int slot = 0; slot < 9; ++slot) {
+        cout << "x_ = " << bottle_slots[slot]->x << " y_ = " << bottle_slots[slot]->y << endl;
     }
 
     _(cout << "BottleRecognizer >> end, time: " << get_milli_sec() << endl;)
@@ -168,20 +169,20 @@ string BottleRecognizer::calibrate_locations(string known_location_str) {
 
     vector<pair<string, string>> slot_locations_properties = read_params_file(slot_locations_file);
 
-    vector<string> param_name(3);
+    vector<string> param_name(2);
     param_name[0] = "_x";
     param_name[1] = "_y";
-    param_name[2] = "_z";
     for (size_t i = 0; i < num_bottles; ++i) {
         int slot_num = -1;
 
-        tag_pose_t tag_pose = get_tag_pose(bottle_list[i]);
+        //tag_pose_t tag_pose = get_tag_pose(bottle_list[i]);
 
         slot_num = bottle_2_slot.at(bottle_list[i].id);
+        vector<float> xy_val = {bottle_list[i].cxy.first, bottle_list[i].cxy.second};
 
-        for (int offset = 0; offset < 3; ++offset) {
-            slot_locations_properties[slot_num*3 + offset].second = to_string(tag_pose.translation(offset));
-            slot_locations_properties[slot_num*3 + offset].first = to_string(slot_num) + param_name[offset];
+        for (int offset = 0; offset < 2; ++offset) {
+            slot_locations_properties[slot_num*2 + offset].second = to_string(xy_val[offset]);
+            slot_locations_properties[slot_num*2 + offset].first = to_string(slot_num) + param_name[offset];
         }
     }
 
@@ -245,15 +246,10 @@ void BottleRecognizer::print_detection(AprilTags::TagDetection& detection) const
     cout << "  Id: " << detection.id
              << " (Hamming: " << detection.hammingDistance << ")";
 
-    tag_pose_t tag_pose = get_tag_pose(detection);
+    //tag_pose_t tag_pose = get_tag_pose(detection);
 
-    cout << "  distance=" << tag_pose.translation.norm()
-             << "m, x=" << tag_pose.translation(0)
-             << ", y=" << tag_pose.translation(1)
-             << ", z=" << tag_pose.translation(2)
-             << ", yaw=" << tag_pose.yaw
-             << ", pitch=" << tag_pose.pitch
-             << ", roll=" << tag_pose.roll
+    cout << "  x=" << detection.cxy.first
+             << " y=" << detection.cxy.second
              << endl;
 }
 
@@ -270,11 +266,10 @@ void BottleRecognizer::reset_slot_occupancy() {
 float BottleRecognizer::calc_tag2slot_dist(AprilTags::TagDetection tag_location, bottle_slot_t bottle_slot) {
     _(cout << "calc_tag2slot_dist >> start, time: " << get_milli_sec() << endl;)
 
-    tag_pose_t tag_pose = get_tag_pose(tag_location);
+    //tag_pose_t tag_pose = get_tag_pose(tag_location);
 
-    float distance = sqrt(pow(tag_pose.translation(0) - bottle_slot.x, 2) 
-        + pow(tag_pose.translation(1) - bottle_slot.y, 2) 
-        + pow(tag_pose.translation(2) - bottle_slot.z, 2));
+    float distance = sqrt(pow(tag_location.cxy.first - bottle_slot.x, 2) 
+        + pow(tag_location.cxy.second - bottle_slot.y, 2));
 
     _(cout << "calc_tag2slot_dist >> end, time: " << get_milli_sec() << endl;)
     return distance;
