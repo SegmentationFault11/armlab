@@ -118,23 +118,24 @@ void BottleRecognizer::setup() {
                 exit(1);
             }
         }
+
+        if (tries) {
+            for (int i = 0; tries != 0 && i < 4; ++i) {
+                if (i) {
+                    cout << ". " << flush;
+                }
+                usleep(1000000);
+            }
+            cout << "\b\b\b\b\b\b      \b\b\b\b\b\b" << flush;
+        }
         
         try {
             video_capture = cv::VideoCapture(CAMERA_ID);
         }
         catch (cv::Exception& ce) {
-            _(cout << ce.what() << endl;)
+            cout << ce.what() << endl;
             (void) ce;
         }
-
-        for (int i = 0; i < 4 ; ++i) {
-            if (i) {
-                cout << ". " << flush;
-            }
-            usleep(1000000);
-        }
-
-        cout << "\b\b\b\b\b\b      \b\b\b\b\b\b" << flush;
     }
     while (!video_capture.isOpened() && ++tries < MAX_CAMERA_TRIES);
     cout << endl;
