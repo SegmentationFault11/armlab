@@ -7,19 +7,45 @@
 #endif
 
 #ifdef __LINUX__
-#define EXPOSURE_CONTROL 
+#define IS_LINUX 1
+#else
+#define IS_LINUX 0
 #endif
 
 #ifdef __APPLE__
-#define CAMERA_ID 1
+#define IS_APPLE 1
 #else
-#define CAMERA_ID 0
+#define IS_APPLE 0
 #endif
+
+#define CAMERA_ID 1
+#define MAX_CAMERA_TRIES 5
 
 atomic<bool> grabber_go;
 
+int handleError(int status, const char* func_name, const char* err_msg, 
+            const char* file_name, int line, void* userdata)
+{
+    //Do nothing -- will suppress OpenCV console output
+
+    (void) status;
+    (void) func_name;
+    (void) err_msg;
+    (void) file_name;
+    (void) line;
+    (void) userdata;
+    return 0;
+}
+
 BottleRecognizer::BottleRecognizer() {
     _(cout << "BottleRecognizer >> start, time: " << get_milli_sec() << endl;)
+
+    FILE *cerr_file = fopen("cerr.txt", "ab+");
+    dup2(fileno(cerr_file), STDERR_FILENO);
+    fclose(cerr_file);
+
+    cvRedirectError(handleError);
+    cv::redirectError(handleError);
 
     tag_detector = new AprilTags::TagDetector(AprilTags::tagCodes36h11);
 
@@ -32,7 +58,7 @@ BottleRecognizer::BottleRecognizer() {
         slot_locations_properties = read_params_file(slot_locations_file);
     } 
     catch (const runtime_error& re) {
-        cerr << re.what();
+        cout << re.what();
         exit(1);
     }
 
@@ -52,10 +78,6 @@ BottleRecognizer::BottleRecognizer() {
         }      
     }
 
-    for (int slot = 0; slot < 9; ++slot) {
-        cout << "x_ = " << bottle_slots[slot]->x << " y_ = " << bottle_slots[slot]->y << endl;
-    }
-
     _(cout << "BottleRecognizer >> end, time: " << get_milli_sec() << endl;)
 }
 
@@ -72,23 +94,48 @@ void BottleRecognizer::setup() {
 
     cv::namedWindow(display_window_name, 1);
 
-#ifdef EXPOSURE_CONTROL
-    // manually setting camera exposure settings; OpenCV/v4l1 doesn't
-    // support exposure control; so here we manually use v4l2 before
-    // opening the device via OpenCV; confirmed to work with Logitech
-    // C270; try exposure=20, gain=100, brightness=150
+#ifdef __LINUX__
+        // manually setting camera exposure settings; OpenCV/v4l1 doesn't
+        // support exposure control; so here we manually use v4l2 before
+        // opening the device via OpenCV; confirmed to work with Logitech
+        // C270; try exposure=20, gain=100, brightness=150
 
-    string video_str = "/dev/video0";
-    video_str[10] = '0' + 1;
-    int device = v4l2_open(video_str.c_str(), O_RDWR | O_NONBLOCK);
+        string video_str = "/dev/video0";
+        video_str[10] = '0' + 1;
+        int device = v4l2_open(video_str.c_str(), O_RDWR | O_NONBLOCK);
 
-    v4l2_close(device);
-#endif 
+        v4l2_close(device);
+#endif
 
     // find and open a USB camera (built in laptop camera, web cam etc)
-    video_capture = cv::VideoCapture(CAMERA_ID);
+
+    cout << "Connecting to webcam " << flush;
+    int tries = 0;
+    do {
+        if (IS_LINUX) {
+            system("lsusb");
+        }
+        
+        try {
+            video_capture = cv::VideoCapture(CAMERA_ID);
+        }
+        catch (cv::Exception& ce) {
+            _(cout << ce.what() << endl;)
+            (void) ce;
+        }
+
+        for (int i = 0; i < 4 ; ++i) {
+            if (i) {
+                cout << ". " << flush;
+            }
+            usleep(1000000);
+        }
+        cout << "\b\b\b\b\b\b      \b\b\b\b\b\b" << flush;
+    }
+    while (!video_capture.isOpened() && ++tries < MAX_CAMERA_TRIES);
+
     if(!video_capture.isOpened()) {
-        cerr << "ERROR: Can't find video device " << 1 << "\n";
+        cout << "ERROR: Can't find video device " << CAMERA_ID << "\n";
         exit(1);
     }
 

@@ -35,7 +35,24 @@ using namespace std;
 
 namespace AprilTags {
 
+  int handleError( int status, const char* func_name, const char* err_msg, 
+            const char* file_name, int line, void* userdata )
+  {
+    //Do nothing -- will suppress OpenCV console output
+
+    (void) status;
+    (void) func_name;
+    (void) err_msg;
+    (void) file_name;
+    (void) line;
+    (void) userdata;
+    return 0;
+  }
+
   std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image) {
+
+    cvRedirectError(AprilTags::handleError);
+    cv::redirectError(AprilTags::handleError);
 
     // convert to internal AprilTags image (todo: slow, change internally to OpenCV)
     int width = image.cols;
