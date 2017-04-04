@@ -113,7 +113,10 @@ void BottleRecognizer::setup() {
     int tries = 0;
     do {
         if (IS_LINUX) {
-            (void) system("lsusb");
+            if (system("lsusb")) {
+                cout << "Failed calling lsusb" << endl;
+                exit(1);
+            }
         }
         
         try {
