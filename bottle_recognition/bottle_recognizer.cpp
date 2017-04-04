@@ -113,7 +113,7 @@ void BottleRecognizer::setup() {
     int tries = 0;
     do {
         if (IS_LINUX) {
-            system("lsusb");
+            (void) system("lsusb");
         }
         
         try {
@@ -130,13 +130,18 @@ void BottleRecognizer::setup() {
             }
             usleep(1000000);
         }
+
         cout << "\b\b\b\b\b\b      \b\b\b\b\b\b" << flush;
     }
     while (!video_capture.isOpened() && ++tries < MAX_CAMERA_TRIES);
+    cout << endl;
 
     if(!video_capture.isOpened()) {
         cout << "ERROR: Can't find video device " << CAMERA_ID << "\n";
         exit(1);
+    }
+    else {
+        cout << "Webcam connected" << endl;
     }
 
     video_capture.set(CV_CAP_PROP_FRAME_WIDTH, 640);
