@@ -145,7 +145,7 @@ class Gui(QtGui.QMainWindow):
         """ 
         self.ui.sldrShoulder.setValue(-90)
         self.ui.sldrMaxTorque.setValue(90)
-        self.ui.sldrSpeed.setValue(6)
+        self.ui.sldrSpeed.setValue(12)
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
@@ -354,7 +354,7 @@ class Gui(QtGui.QMainWindow):
             print "current_hole_index:", current_hole_index
             print "desired_ee:", desired_ee
 
-        is_reached_current_bottle = ((error_x < 0.05) and (error_y < 0.05) and (error_z < 0.05)) 
+        is_reached_current_bottle = ((error_x < 0.02) and (error_y < 0.02) and (error_z < 0.02)) 
         # if is_reached_current_bottle:
         #     print "REACHED:", desired_ee
 
