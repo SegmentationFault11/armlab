@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+//#include "opencv2/opencv.hpp"
+
 #include "socket_functions.hpp"
 #include "bottle_recognizer.hpp"
 #include "helper.hpp"
@@ -16,6 +18,9 @@ using namespace std;
 
 int main() {
     _(cout << "main >> start, time: " << get_milli_sec() << endl;)
+
+    //cvRedirectError(handleError);
+    //cv::redirectError(handleError);
 
     BottleRecognizer recognizer;
     recognizer.setup();
@@ -47,8 +52,6 @@ int main() {
 
         send_msg(client_soc, response);
     }
-
-
 
     _(cout << "main >> end, time: " << get_milli_sec() << endl;)
     return 0;
