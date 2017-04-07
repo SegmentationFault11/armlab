@@ -1,4 +1,4 @@
-import sys, os, inspect, thread, math
+import sys, os, inspect, thread, math, serial
 import cv2
 from lcm import LCM
 import numpy as np
@@ -8,8 +8,11 @@ from ui import Ui_MainWindow
 from rexarm import Rexarm
 from decimal import *
 import time
-
 from video import Video
+
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
+#ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
+ser.isOpen()
 
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
@@ -33,7 +36,7 @@ cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Len
 
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
 IK_DEBUG = 0 # Change to '1' to print out stuff for Inverse Kinematics
-LCM_DEBUG = 1 # Change to '1' to print out stuff for LCM
+LCM_DEBUG = 0 # Change to '1' to print out stuff for LCM
 
 FINAL_END_EFFECTORS = [
     [0.10125143894897511, -0.12094915633605999, 0.18061180478670984, -0.15],
@@ -45,7 +48,8 @@ FINAL_END_EFFECTORS = [
     [-0.072391107920756079, 0.14014306904605794, 0.18061180478670984, -0.15],
     [0.012632140474910281, 0.15722907280355261, 0.18061180478670984, -0.15],
     [0.093447433342095709, 0.12707529071151988, 0.18061180478670984, -0.15],
-    [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15] # HOME
+    [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15], # HOME
+    [0, 0, 0, 0] # GARBAGE
 ]
 
 # import LCM packages
@@ -55,7 +59,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir) 
 from lcm_python import arm_command_t    
 
-current_hole_index = -1
+current_hole_index = 10
 is_reached_current_bottle = 0
 
 
@@ -70,16 +74,19 @@ def arm_handler(channel, data):
     hole_indices = []
     for i in range(msg.size):
         hole_indices.append(msg.hole_indices[i])
-    hole_indices_sorted = sorted(hole_indices)
-    print "hole_indices:", hole_indices
-    print "sorted:", hole_indices_sorted
+    hole_indices_sorted = sorted(hole_indices)    
     for i in range(msg.size):
         current_hole_index = hole_indices_sorted[i]
+        print "current_hole_index:", current_hole_index
         ex.driveToBottle(current_hole_index)
         while (is_reached_current_bottle == 0):
             a = 1
-        print "CURRENT_HOLE_INDEX:", current_hole_index
+        print "REACHED:", current_hole_index
+        print "WRITE:", chr(ord('0') + current_hole_index)
+        ser.write(chr(ord('0') + current_hole_index))
         time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
+        ser.write(chr(ord('a') + current_hole_index))
+        time.sleep(1.0)
         is_reached_current_bottle = 0
     ex.driveToBottle(9) # Drive home   
 
@@ -137,8 +144,8 @@ class Gui(QtGui.QMainWindow):
         LAB TASK: CONNECT THE OTHER 5 SLIDERS IMPLEMENTED IN THE GUI 
         """ 
         self.ui.sldrShoulder.setValue(-90)
-        # self.ui.sldrMaxTorque.setValue(10)
-        self.ui.sldrSpeed.setValue(6)
+        self.ui.sldrMaxTorque.setValue(90)
+        self.ui.sldrSpeed.setValue(12)
 
         self.ui.sldrBase.valueChanged.connect(self.sliderChange)
         self.ui.sldrShoulder.valueChanged.connect(self.sliderChange)
@@ -340,14 +347,14 @@ class Gui(QtGui.QMainWindow):
         error_x = abs(end_effector[0,0] - desired_ee[0])
         error_y = abs(end_effector[1,0] - desired_ee[1])
         error_z = abs(end_effector[2,0] - desired_ee[2])
-        #if LCM_DEBUG:
-            # print "\nerror_x:", error_x
-            # print "error_y:", error_y
-            # print "error_z:", error_z
-            # print "current_hole_index:", current_hole_index
-            # print "desired_ee:", desired_ee
+        if LCM_DEBUG:
+            print "\nerror_x:", error_x
+            print "error_y:", error_y
+            print "error_z:", error_z
+            print "current_hole_index:", current_hole_index
+            print "desired_ee:", desired_ee
 
-        is_reached_current_bottle = ((error_x < 0.01) and (error_y < 0.01) and (error_z < 0.01)) 
+        is_reached_current_bottle = ((error_x < 0.02) and (error_y < 0.02) and (error_z < 0.02)) 
         # if is_reached_current_bottle:
         #     print "REACHED:", desired_ee
 
