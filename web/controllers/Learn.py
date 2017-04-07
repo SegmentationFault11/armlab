@@ -1,10 +1,9 @@
 from flask import Blueprint, session, render_template, request
-import Database
 from AccessManagement import login_required
 from Database import database 
 from LcmClient import lcm_client
 from Utilities import get_text_input, logger
-from Config import INGREDIENTS, MAX_ML
+from Config import MAX_ML
 
 
 learn = Blueprint('learn', __name__, template_folder='templates')
@@ -45,25 +44,25 @@ def learn_route():
 					raise RuntimeError('Drink ' + drinkname + ' already exists')
 				# Example ingredients: [('water', 0.0), ('vodka', 10.0)].
 				ingredients = [(ingredient, get_amount(form[ingredient])) \
-				for ingredient in INGREDIENTS]
+				for ingredient in database.get_ingredient_names(username)]
 				check_total_amount(ingredients)
-				logger.debug('New ingredients: %s' % ingredients)
+				logger.debug('New drink: %s' % ingredients)
 				# Add the recipe into the database.
 				database.add_recipe(username, drinkname, ingredients)
 			# Delete a recipe.
 			elif form['op'] == 'delete_recipe':
-				# Delete the recipe from into the database.
+				# Delete the recipe from the database.
 				database.delete_recipe(username, form['drinkname'])			
 			else:
 				raise RuntimeError('Did you click the button?')
 	except Exception as e:
-		logger.error(e)
+		logger.exception(e)
 		options['error'] = e
 	# Retrieve recipes even if POST request fails.
 	try:
 		options['recipes'] = database.get_recipes(username)
-		options['ingredients'] = INGREDIENTS
+		options['ingredients'] = database.get_ingredient_names(username)
 	except Exception as e:
-		logger.error(e)
+		logger.exception(e)
 		options['error'] = e
 	return render_template('learn.html', **options)
