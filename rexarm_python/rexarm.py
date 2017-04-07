@@ -153,8 +153,9 @@ class Rexarm():
         cfg describe elbow down (0) or elbow up (1) configuration
         returns a 4-tuple of joint angles or NONE if configuration is impossible
         """
-        print "________________________________________"
-        print "IK: Started"
+        if IK_DEBUG:
+            print "________________________________________"
+            print "IK: Started"
 
         x_g = pose[0]
         y_g = pose[1]
@@ -223,8 +224,9 @@ class Rexarm():
             print "theta2:", round(theta2,3)
             print "theta4:", round(theta4,3)
 
-        print "\nIK: Done"
-        print "________________________________________"
+        if IK_DEBUG:
+            print "\nIK: Done"
+            print "________________________________________"
         return [theta1, theta2, theta3, theta4]
 
     def rexarm_collision_check(q):

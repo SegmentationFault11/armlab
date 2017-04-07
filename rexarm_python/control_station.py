@@ -10,9 +10,9 @@ from decimal import *
 import time
 from video import Video
 
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
+# ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2) # FIXME: uncomment
 #ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
-ser.isOpen()
+# ser.isOpen() # FIXME: uncomment
 
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
@@ -37,6 +37,9 @@ cfg = [LINK1_LENGTH + OFFSET, LINK2_LENGTH, LINK3_LENGTH, LINK4_LENGTH, 0] # Len
 FK_DEBUG = 0 # Change to '1' to print out stuff for Forward Kinematics
 IK_DEBUG = 0 # Change to '1' to print out stuff for Inverse Kinematics
 LCM_DEBUG = 0 # Change to '1' to print out stuff for LCM
+MIX_DEBUG = 1
+
+ERROR_IF_REACHED = 0.01
 
 FINAL_END_EFFECTORS = [
     [0.10125143894897511, -0.12094915633605999, 0.18061180478670984, -0.15],
@@ -52,6 +55,21 @@ FINAL_END_EFFECTORS = [
     [0, 0, 0, 0] # GARBAGE
 ]
 
+MIX_RADIUS = 0.03
+MIX_CENTER = [0.099176, -0.01154, 0.22049, -0.15]
+# MIX_CENTER = [0.12, 0.00154, 0.20749, -0.15]
+MIX_PHI = [0, PI/4, PI/2, 3*PI/4, PI, 5*PI/4, 3*PI/2, 7*PI/4, 2*PI]
+MIX_END_EFFECTORS = [
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+]
+
 # import LCM packages
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(
 inspect.currentframe())))
@@ -61,10 +79,11 @@ from lcm_python import arm_command_t
 
 current_hole_index = 10
 is_reached_current_bottle = 0
+goal_ee = [0.0, 0.0, 0.0]
 
 
 def arm_handler(channel, data):
-    global current_hole_index, is_reached_current_bottle
+    global current_hole_index, is_reached_current_bottle, goal_ee
     msg = arm_command_t.arm_command_t.decode(data)
     if LCM_DEBUG:
         print "\nMessage Received"
@@ -77,12 +96,9 @@ def arm_handler(channel, data):
     hole_indices_sorted = sorted(hole_indices)    
     for i in range(msg.size):
         current_hole_index = hole_indices_sorted[i]
-        print "current_hole_index:", current_hole_index
-        ex.driveToBottle(current_hole_index)
+        ex.driveToBottle(FINAL_END_EFFECTORS[current_hole_index])
         while (is_reached_current_bottle == 0):
             a = 1
-        print "REACHED:", current_hole_index
-        print "WRITE:", chr(ord('0') + current_hole_index)
         ser.write(chr(ord('0') + current_hole_index))
         time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
         ser.write(chr(ord('a') + current_hole_index))
@@ -160,11 +176,11 @@ class Gui(QtGui.QMainWindow):
         """ Connect Buttons to Functions 
         LAB TASK: NAME AND CONNECT BUTTONS AS NEEDED
         """
-        self.ui.btnUser1.setText("Inverse Kinemetics")
-        self.ui.btnUser1.clicked.connect(self.ik)
+        self.ui.btnUser1.setText("Find Eight Mix Points")
+        self.ui.btnUser1.clicked.connect(self.findEightMixPoints)
 
-        self.ui.btnUser2.setText("Record End Effector")
-        self.ui.btnUser2.clicked.connect(self.record_end_effector)
+        self.ui.btnUser2.setText("Mix Drink")
+        self.ui.btnUser2.clicked.connect(self.mixDrink)
 
         self.ui.btnUser3.setText("Home")
         self.ui.btnUser3.clicked.connect(self.driveToHome)
@@ -342,21 +358,20 @@ class Gui(QtGui.QMainWindow):
                                     %(self.video.mouse_click_id + 1))
 
     def check_if_reached(self):
-        global is_reached_current_bottle
-        desired_ee = FINAL_END_EFFECTORS[current_hole_index]
-        error_x = abs(end_effector[0,0] - desired_ee[0])
-        error_y = abs(end_effector[1,0] - desired_ee[1])
-        error_z = abs(end_effector[2,0] - desired_ee[2])
+        global is_reached_current_bottle, goal_ee
+        error_x = abs(end_effector[0,0] - goal_ee[0])
+        error_y = abs(end_effector[1,0] - goal_ee[1])
+        error_z = abs(end_effector[2,0] - goal_ee[2])
         if LCM_DEBUG:
             print "\nerror_x:", error_x
             print "error_y:", error_y
             print "error_z:", error_z
             print "current_hole_index:", current_hole_index
-            print "desired_ee:", desired_ee
+            print "goal_ee:", goal_ee
 
-        is_reached_current_bottle = ((error_x < 0.02) and (error_y < 0.02) and (error_z < 0.02)) 
+        is_reached_current_bottle = ((error_x < ERROR_IF_REACHED) and (error_y < ERROR_IF_REACHED) and (error_z < ERROR_IF_REACHED)) 
         # if is_reached_current_bottle:
-        #     print "REACHED:", desired_ee
+        #     print "REACHED:", goal_ee
 
         return is_reached_current_bottle 
 
@@ -442,37 +457,39 @@ class Gui(QtGui.QMainWindow):
         self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))
 
     def driveToBottle0(self):   
-        self.driveToBottle(0)
+        self.driveToBottle(FINAL_END_EFFECTORS[0])
 
     def driveToBottle1(self):   
-        self.driveToBottle(1)
+        self.driveToBottle(FINAL_END_EFFECTORS[1])
 
     def driveToBottle2(self):   
-        self.driveToBottle(2)
+        self.driveToBottle(FINAL_END_EFFECTORS[2])
         
     def driveToBottle3(self):   
-        self.driveToBottle(3)
+        self.driveToBottle(FINAL_END_EFFECTORS[3])
         
     def driveToBottle4(self):   
-        self.driveToBottle(4)
+        self.driveToBottle(FINAL_END_EFFECTORS[4])
 
     def driveToBottle5(self):   
-        self.driveToBottle(5)
+        self.driveToBottle(FINAL_END_EFFECTORS[5])
         
     def driveToBottle6(self):   
-        self.driveToBottle(6)
+        self.driveToBottle(FINAL_END_EFFECTORS[6])
         
     def driveToBottle7(self):   
-        self.driveToBottle(7)
+        self.driveToBottle(FINAL_END_EFFECTORS[7])
 
     def driveToBottle8(self):   
-        self.driveToBottle(8)   
+        self.driveToBottle(FINAL_END_EFFECTORS[8])   
 
     def driveToHome(self):   
-        self.driveToBottle(9)                     
+        self.driveToBottle(FINAL_END_EFFECTORS[9])                     
 
-    def driveToBottle(self, index_of_ee):
-        result_angles = self.rex.rexarm_ik(FINAL_END_EFFECTORS[index_of_ee], cfg)
+    def driveToBottle(self, end_effector):
+        global goal_ee
+        goal_ee = end_effector
+        result_angles = self.rex.rexarm_ik(end_effector, cfg)
 
         self.rex.joint_angles[0] = result_angles[0]
         self.rex.joint_angles[1] = -1*result_angles[1]
@@ -480,6 +497,35 @@ class Gui(QtGui.QMainWindow):
         self.rex.joint_angles[3] = -1*result_angles[3]
 
         self.rex.cmd_publish()
+
+    def findEightMixPoints(self):
+        for i in range(8):
+            MIX_END_EFFECTORS[i] = [MIX_CENTER[0] + math.cos(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[1] + math.sin(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[2], MIX_CENTER[3]]
+        if MIX_DEBUG:
+            print "MIX_CENTER", MIX_CENTER
+            for i in range(8):
+                print "MIX_END_EFFECTORS",i,":",MIX_END_EFFECTORS[i]
+
+    def mixDrink(self):
+        
+        self.ui.rdoutStatus.setText("Mixing drink...")
+
+        thread.start_new_thread( handle_mixing, () )
+
+def handle_mixing():
+        global current_hole_index, is_reached_current_bottle, goal_ee    
+        while True:
+            for j in range(2):
+                for i in range(8):
+                    print "Driving to", i, ":", MIX_END_EFFECTORS[i]
+                    ex.driveToBottle(MIX_END_EFFECTORS[i])
+                    while (is_reached_current_bottle == 0):
+                        a = 1
+                    print "Sleeping..."    
+                    time.sleep(0.001)  
+                    is_reached_current_bottle = 0
+            break
+        ex.driveToHome()        
 
 def main():
     global ex
