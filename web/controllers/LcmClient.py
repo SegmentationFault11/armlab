@@ -1,6 +1,6 @@
 from Database import database
 import lcm, os, inspect, sys, socket
-from Config import SEC_PER_ML, INGREDIENTS
+from Config import SEC_PER_ML
 from Utilities import logger
 # Import LCM packages
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(
@@ -10,6 +10,8 @@ parentdir = os.path.dirname(parentdir)
 sys.path.insert(0,parentdir) 
 from lcm_python.arm_command_t import arm_command_t
 
+
+DEBUG = False
 
 class LcmClient(object):
 	def __init__(self):
@@ -39,11 +41,13 @@ class LcmClient(object):
 			# Call arm controller.
 			msg = arm_command_t()
 			msg.size = len(drink['ingred_amounts'])
-			msg.hole_indices = self.get_hole_indices(drink['ingred_names'])
+			msg.hole_indices = self.get_hole_indices(drink['ingred_names'], \
+				username)
 			msg.stop_times = self.volume_to_time(drink['ingred_amounts'])
 			logger.debug('LCM publishing:\n%s' % \
 				self.msg_to_str(msg))
-			self.lc.publish("ARM", msg.encode())
+			if not DEBUG:
+				self.lc.publish("ARM", msg.encode())
 			return '%s is being prepared...' % drink['drinkname']
 
 	def prune_ingredients(self, ingredients):
@@ -52,17 +56,19 @@ class LcmClient(object):
 		return [i[1] for i in ingredients if i[1] > 0], \
 		[i[0] for i in ingredients if i[1] > 0]
 
-	def get_hole_indices(self, ingred_names):
+	def get_hole_indices(self, ingred_names, username):
 		# Call camera controller.
 		# If ingred_names == ['Orange Juice'],
 		# return [<hole_id>].
-		camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		camera_socket.connect(('localhost', 12000))
-		camera_socket.send("Get Locations" + '\0')
-		rcv = camera_socket.recv(512)
-		# rcv = '{7|2}{5|0}{4|1}' # debug
+		if not DEBUG:
+			camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			camera_socket.connect(('localhost', 12000))
+			camera_socket.send("Get Locations" + '\0')
+			rcv = camera_socket.recv(512)
+		else:
+			rcv = '{7|2}{5|0}{4|1}'
 		logger.debug('Camera returns: %s' % rcv)
-		ingred_hole_map = self.parse_camera_rcv(rcv)
+		ingred_hole_map = self.parse_camera_rcv(rcv, username)
 		logger.debug('Mapping btw ingredients and holes: %s' % ingred_hole_map)
 		rtn = []
 		for ingred_name in ingred_names:
@@ -71,7 +77,8 @@ class LcmClient(object):
 			rtn.append(ingred_hole_map[ingred_name])
 		return rtn
 
-	def parse_camera_rcv(self, rcv):
+	def parse_camera_rcv(self, rcv, username):
+		# ...{hole_id|april_id}...
 		# If rcv == '{7|2}{5|0}{4|1}', (assuming single-digit)
 		# return {'Apple Juice': 7, 'Vodka': 5, 'Orange Juice': 4}.
 		rtn = {}
@@ -89,9 +96,10 @@ class LcmClient(object):
 				assert(c == '|')
 				state = 3
 			elif state == 3:
-				ingred_id = int(c)
-				assert(ingred_id >= 0 and ingred_id < len(INGREDIENTS))
-				ingred_name = INGREDIENTS[ingred_id]
+				april_id = int(c)
+				assert(april_id >= 0)
+				ingred_name = database.get_ingredient_name_from_id(username, \
+					april_id)
 				state = 4
 			elif state == 4:
 				assert(c == '}')
