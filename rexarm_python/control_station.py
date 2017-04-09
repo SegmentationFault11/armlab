@@ -58,17 +58,14 @@ FINAL_END_EFFECTORS = [
 MIX_RADIUS = 0.03
 MIX_CENTER = [0.099176, -0.01154, 0.22049, -0.15]
 # MIX_CENTER = [0.12, 0.00154, 0.20749, -0.15]
-MIX_PHI = [0, PI/4, PI/2, 3*PI/4, PI, 5*PI/4, 3*PI/2, 7*PI/4, 2*PI]
-MIX_END_EFFECTORS = [
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    []
-]
+NUMBER_OF_POINTS = 16
+CHANGE_IN_ANGLE = 2*PI/NUMBER_OF_POINTS
+MIX_PHI = []
+MIX_END_EFFECTORS = []
+for i in range(NUMBER_OF_POINTS):
+    MIX_PHI.append(CHANGE_IN_ANGLE*i)
+    MIX_END_EFFECTORS.append([0,0,0])
+
 
 # import LCM packages
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(
@@ -104,7 +101,7 @@ def arm_handler(channel, data):
         ser.write(chr(ord('a') + current_hole_index))
         time.sleep(1.0)
         is_reached_current_bottle = 0
-    ex.driveToBottle(9) # Drive home   
+    ex.driveToHome() # Drive home   
 
 
 def handle_lcm():
@@ -123,6 +120,7 @@ class Gui(QtGui.QMainWindow):
     the GUI and functions
     """
     def __init__(self,parent=None):
+        print 'TEST INITial'
         QtGui.QWidget.__init__(self,parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -499,7 +497,7 @@ class Gui(QtGui.QMainWindow):
         self.rex.cmd_publish()
 
     def findEightMixPoints(self):
-        for i in range(8):
+        for i in range(NUMBER_OF_POINTS):
             MIX_END_EFFECTORS[i] = [MIX_CENTER[0] + math.cos(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[1] + math.sin(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[2], MIX_CENTER[3]]
         if MIX_DEBUG:
             print "MIX_CENTER", MIX_CENTER
@@ -513,18 +511,27 @@ class Gui(QtGui.QMainWindow):
         thread.start_new_thread( handle_mixing, () )
 
 def handle_mixing():
-        global current_hole_index, is_reached_current_bottle, goal_ee    
+        global current_hole_index, is_reached_current_bottle, goal_ee
+           
         while True:
+        
             for j in range(2):
-                for i in range(8):
-                    print "Driving to", i, ":", MIX_END_EFFECTORS[i]
-                    ex.driveToBottle(MIX_END_EFFECTORS[i])
+                print "NUMBER_OF_POINTS ", NUMBER_OF_POINTS
+                for k in range(NUMBER_OF_POINTS):
+                    print "TEST k ", k
+                    #if (k==1):
+                        #ex.ui.sldrSpeed.setValue(30)
+                    print "Driving to", k, ":", MIX_END_EFFECTORS[k]
+                    ex.driveToBottle(MIX_END_EFFECTORS[k])
                     while (is_reached_current_bottle == 0):
-                        a = 1
+                        pass
                     print "Sleeping..."    
-                    time.sleep(0.001)  
+                    #time.sleep(0.001)  
                     is_reached_current_bottle = 0
+            
             break
+
+        #ex.ui.sldrSpeed.setValue(12)
         ex.driveToHome()        
 
 def main():
