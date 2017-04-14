@@ -8,7 +8,7 @@ SERVICES = {
 	}
 
 # Ingredients.
-INGREDIENTS = ['Orange Juice', 'Water', 'Purified Water']
+INGREDIENTS = ['Vodka', 'Orange Juice', 'Water', 'Purified Water']
 
 # Maximum volume in ml.
 MAX_ML = 150

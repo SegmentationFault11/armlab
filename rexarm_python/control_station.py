@@ -10,9 +10,9 @@ from decimal import *
 import time
 from video import Video
 
-# ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2) # FIXME: uncomment
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2) # FIXME: uncomment
 #ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
-# ser.isOpen() # FIXME: uncomment
+ser.isOpen() # FIXME: uncomment
 
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
@@ -56,7 +56,7 @@ FINAL_END_EFFECTORS = [
 ]
 
 MIX_RADIUS = 0.03
-MIX_CENTER = [0.099176, -0.01154, 0.22049, -0.15]
+MIX_CENTER = [0.119176, -0.01154, 0.18061180478670984, -0.15]
 # MIX_CENTER = [0.12, 0.00154, 0.20749, -0.15]
 NUMBER_OF_POINTS = 16
 CHANGE_IN_ANGLE = 2*PI/NUMBER_OF_POINTS
@@ -101,7 +101,8 @@ def arm_handler(channel, data):
         ser.write(chr(ord('a') + current_hole_index))
         time.sleep(1.0)
         is_reached_current_bottle = 0
-    ex.driveToHome() # Drive home   
+    # ex.driveToHome() # Drive home   
+    ex.mixDrink()
 
 
 def handle_lcm():
@@ -174,8 +175,8 @@ class Gui(QtGui.QMainWindow):
         """ Connect Buttons to Functions 
         LAB TASK: NAME AND CONNECT BUTTONS AS NEEDED
         """
-        self.ui.btnUser1.setText("Find Eight Mix Points")
-        self.ui.btnUser1.clicked.connect(self.findEightMixPoints)
+        self.ui.btnUser1.setText("Find Mix Points")
+        self.ui.btnUser1.clicked.connect(self.findMixPoints)
 
         self.ui.btnUser2.setText("Mix Drink")
         self.ui.btnUser2.clicked.connect(self.mixDrink)
@@ -496,17 +497,17 @@ class Gui(QtGui.QMainWindow):
 
         self.rex.cmd_publish()
 
-    def findEightMixPoints(self):
+    def findMixPoints(self):
         for i in range(NUMBER_OF_POINTS):
             MIX_END_EFFECTORS[i] = [MIX_CENTER[0] + math.cos(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[1] + math.sin(MIX_PHI[i])*MIX_RADIUS, MIX_CENTER[2], MIX_CENTER[3]]
         if MIX_DEBUG:
             print "MIX_CENTER", MIX_CENTER
-            for i in range(8):
-                print "MIX_END_EFFECTORS",i,":",MIX_END_EFFECTORS[i]
 
     def mixDrink(self):
         
         self.ui.rdoutStatus.setText("Mixing drink...")
+
+        self.findMixPoints()
 
         thread.start_new_thread( handle_mixing, () )
 
@@ -518,15 +519,14 @@ def handle_mixing():
             for j in range(2):
                 print "NUMBER_OF_POINTS ", NUMBER_OF_POINTS
                 for k in range(NUMBER_OF_POINTS):
-                    print "TEST k ", k
                     #if (k==1):
                         #ex.ui.sldrSpeed.setValue(30)
-                    print "Driving to", k, ":", MIX_END_EFFECTORS[k]
+                    #print "Driving to", k, ":", MIX_END_EFFECTORS[k]
                     ex.driveToBottle(MIX_END_EFFECTORS[k])
                     while (is_reached_current_bottle == 0):
                         pass
-                    print "Sleeping..."    
-                    #time.sleep(0.001)  
+                    #print "Sleeping..."    
+                    time.sleep(0.0001)  
                     is_reached_current_bottle = 0
             
             break
