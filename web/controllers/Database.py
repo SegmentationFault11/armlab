@@ -50,30 +50,77 @@ class Database(object):
 	# Returns true if the username already exists.
 	def username_exists(self, username):
 		return not self.users.find_one({'username': username}) is None
+
+	# Adds the ingredient name and its april tag id.
+	def add_ingredient(self, username, ingred_name, april_id):
+		self._get_ingredient_collection(username).insert_one( \
+			{'ingred_name': ingred_name, 'april_id': april_id})
+
+	# Checks if the ingredient name and its april tag id are valid.
+	# Throws exception otherwise.
+	def check_ingred_april_id(self, username, ingred_name, april_id):
+		ingred_collection = self.get_ingredients(username)
+		for i in ingred_collection:
+			if i['ingred_name'] == ingred_name:
+				raise RuntimeError('Ingredient already exists')
+			if i['april_id'] == april_id:
+				raise RuntimeError('April Tag ID already associated with %s' % \
+					i['ingred_name'])
+
+	# Deletes the ingredient.
+	def delete_ingredient(self, username, ingred_name):
+		self._get_ingredient_collection(username).delete_one( \
+			{'ingred_name': ingred_name})
+		
+	# Returns all the ingredients.
+	def get_ingredients(self, username):
+		logger.info('Retrieving ingredients from ingredient_' + username)
+		return [ingredient for ingredient in \
+		self._get_ingredient_collection(username).find()]
+
+	# Returns all the ingredient names.
+	def get_ingredient_names(self, username):
+		logger.info('Retrieving ingredients from ingredient_' + username)
+		return [ingredient['ingred_name'] for ingredient in \
+		self._get_ingredient_collection(username).find()]
+
+	# Returns the ingredient name corresponding to the april tag id.
+	# Returns '' if the id doesn't correspond to any ingredient.
+	def get_ingredient_name_from_id(self, username, april_id):
+		logger.info('Finding ingredient name from april id ' + str(april_id))
+		ingred_collection = self.get_ingredients(username)
+		for i in ingred_collection:
+			if i['april_id'] == april_id:
+				return i['ingred_name']
+		return ''
+
+	# Returns the ingredient collection of the user.
+	def _get_ingredient_collection(self, username):
+		return self.db['ingredient_' + username]
 	
 	# Adds the recipe.
 	def add_recipe(self, username, drinkname, ingredients):
-		self.get_recipe_collection(username).insert_one( \
+		self._get_recipe_collection(username).insert_one( \
 			{'drinkname': drinkname, 'ingredients': ingredients})
 
 	# Returns true if the recipe already exists.
 	def recipe_exists(self, username, drinkname):
-		return not self.get_recipe_collection(username).find_one( \
+		return not self._get_recipe_collection(username).find_one( \
 			{'drinkname': drinkname}) is None
 		
 	# Deletes the recipe.
 	def delete_recipe(self, username, drinkname):
-		self.get_recipe_collection(username).delete_one( \
+		self._get_recipe_collection(username).delete_one( \
 			{'drinkname': drinkname})
 		
 	# Returns all the recipes.
 	def get_recipes(self, username):
 		logger.info('Retrieving recipes from recipe_' + username)
-		return [recipe for recipe in self.get_recipe_collection(username).find()]
+		return [recipe for recipe in \
+		self._get_recipe_collection(username).find()]
 
 	# Returns the recipe collection of the user.
-	def get_recipe_collection(self, username):
-		recipe_collection = 'recipe_' + username
-		return self.db[recipe_collection]
+	def _get_recipe_collection(self, username):
+		return self.db['recipe_' + username]
 
 database = Database()

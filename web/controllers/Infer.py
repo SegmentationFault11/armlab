@@ -34,7 +34,7 @@ def infer_route():
 			else:
 				raise RuntimeError('Did you click the Ask button?')
 	except Exception as e:
-		logger.error(e)
+		logger.exception(e)
 		options['error'] = e
 		return render_template('infer.html', **options)
 	# Display.

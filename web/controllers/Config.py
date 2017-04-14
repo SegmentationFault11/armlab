@@ -18,7 +18,3 @@ SEC_PER_ML = 3.0 / 30.0
 
 # Check.
 assert(SEC_PER_ML >= 0)
-if len(INGREDIENTS) > 10:
-	raise RuntimeError('Too many ingredients but only 4 bottles')
-assert(len(INGREDIENTS) == len(set(INGREDIENTS))) # check duplicate
-

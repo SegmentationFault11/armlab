@@ -3,32 +3,48 @@
 {% block content %}
 <div class="container">
 	<div class="row">
-		<p style="color:gray">Main » Check</p>
+		<p style="color:gray">Main » Ingredient</p>
 	</div>
 
 	<div class="container">
 		<div class="row">
-			<p><h3>List of Services</h3></p>
+			<p><h3>List of Ingredients</h3></p>
 		</div>
 	</div>
+
+	{% if error %}
+	<strong class=text-danger><p class="error">{{ error }}</p></strong>
+	{% endif %}
 
 	<div class="container">
 		<table class="table table-striped table-hover">
 			<thead>
 				<tr>
-					<th>Service name</th>
-					<th>Host</th>
-					<th>Port</th>
+					<th>Ingredient name</th>
+					<th>April Tag ID</th>
+					<th>Action</th>
 				</tr>
 			</thead>
 			<tbody>
-				{% for i in service_list %}
-				<tr>
-					<td>{{ i[0] }}</td>
-					<td>{{ i[1] }}</td>
-					<td>{{ i[2] }}</td>
-				</tr>
+				{% for i in ingredients %}
+				<form action="" method="post" enctype="multipart/form-data">
+					<input name="op" type="hidden" value="delete_ingred"></input>
+					<input name="ingred_name" type="hidden" value="{{ i['ingred_name'] }}"></input>
+					<tr>
+						<td>{{ i['ingred_name'] }}</td>
+						<td>{{ i['april_id'] }}</td>
+						<td><input type="submit" value="Delete" class="btn btn-info btn-sm"></td>
+					</tr>
+				</form>
 				{% endfor %}
+				<form action="" method="post" enctype="multipart/form-data">
+					<input name="op" type="hidden" value="add_ingred"></input>
+					<tr>
+						<td><input name="ingred_name" class="form-control" placeholder="Juice"></td>
+						<td><input name="april_id" class="form-control" value="0"></td>
+						<td><input type="submit" value="Add" class="btn btn-info btn-sm"></td>
+					</tr>
+				</form>
 			</tbody>
 		</table>
 	</div>
