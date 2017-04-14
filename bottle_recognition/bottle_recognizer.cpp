@@ -162,6 +162,8 @@ void BottleRecognizer::setup() {
 }
 
 vector<AprilTags::TagDetection> BottleRecognizer::detect_tags() {
+    _(cout << "detect_tags >> start, time: " << get_milli_sec() << endl;)
+
     cv::Mat image;
     cv::Mat image_gray;
 
@@ -172,7 +174,9 @@ vector<AprilTags::TagDetection> BottleRecognizer::detect_tags() {
         video_capture >> image;
         cv::cvtColor(image, image_gray, CV_BGR2GRAY);
 
+        _(cout << "extractTags >> start, time: " << get_milli_sec() << endl;)
         bottle_list = tag_detector->extractTags(image_gray);
+        _(cout << "extractTags >> end, time: " << get_milli_sec() << endl;)
 
         if (std::any_of(bottle_list.begin(), bottle_list.end(), 
             [](AprilTags::TagDetection i) { return i.hammingDistance > 2; })) {
@@ -191,6 +195,7 @@ vector<AprilTags::TagDetection> BottleRecognizer::detect_tags() {
         throw runtime_error("FATAL: No Bottles Detected");
     }
 
+    _(cout << "detect_tags >> end, time: " << get_milli_sec() << endl;)
     return bottle_list;
 }
 
