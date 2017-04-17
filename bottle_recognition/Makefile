@@ -23,7 +23,7 @@
 	MAC_LINKERS = -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_calib3d
 
 # Linux Linkers
-	LINUX_LINKERS = $(MAC_LINKERS) -lopencv_videoio	
+	LINUX_LINKERS = $(MAC_LINKERS)
 
 # Optimization Level
 	OX = -O3

@@ -61,10 +61,13 @@ class LcmClient(object):
 		# If ingred_names == ['Orange Juice'],
 		# return [<hole_id>].
 		if not DEBUG:
-			camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			camera_socket.connect(('localhost', 12000))
-			camera_socket.send("Get Locations" + '\0')
-			rcv = camera_socket.recv(512)
+			try:
+				camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+				camera_socket.connect(('localhost', 12000))
+				camera_socket.send("Get Locations" + '\0')
+				rcv = camera_socket.recv(512)
+			except Exception as e:
+				raise RuntimeError('Camera\'s error: ' + str(e) + '. Please ask SM for help.')
 		else:
 			rcv = '{7|2}{5|0}{4|1}'
 		logger.debug('Camera returns: %s' % rcv)

@@ -9,6 +9,7 @@ from rexarm import Rexarm
 from decimal import *
 import time
 from video import Video
+from threading import Lock
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2) # FIXME: uncomment
 #ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
@@ -39,6 +40,7 @@ IK_DEBUG = 0 # Change to '1' to print out stuff for Inverse Kinematics
 LCM_DEBUG = 0 # Change to '1' to print out stuff for LCM
 MIX_DEBUG = 1
 
+lock = Lock()
 ERROR_IF_REACHED = 0.01
 
 FINAL_END_EFFECTORS = [
@@ -52,7 +54,7 @@ FINAL_END_EFFECTORS = [
     [0.012632140474910281, 0.15722907280355261, 0.18061180478670984, -0.15],
     [0.093447433342095709, 0.12707529071151988, 0.18061180478670984, -0.15],
     [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15], # HOME
-    [0, 0, 0, 0] # GARBAGE
+    [10, 10, 10, 10] # GARBAGE
 ]
 
 MIX_RADIUS = 0.03
@@ -81,6 +83,9 @@ goal_ee = [0.0, 0.0, 0.0]
 
 def arm_handler(channel, data):
     global current_hole_index, is_reached_current_bottle, goal_ee
+    goal_ee = [0.0, 0.0, 0.0]
+    current_hole_index = 10
+    is_reached_current_bottle = 0
     msg = arm_command_t.arm_command_t.decode(data)
     if LCM_DEBUG:
         print "\nMessage Received"
@@ -94,8 +99,14 @@ def arm_handler(channel, data):
     for i in range(msg.size):
         current_hole_index = hole_indices_sorted[i]
         ex.driveToBottle(FINAL_END_EFFECTORS[current_hole_index])
-        while (is_reached_current_bottle == 0):
-            a = 1
+        while True:
+            lock.acquire()
+            if is_reached_current_bottle == 0:
+                lock.release()
+                continue
+            else:
+                lock.release()
+                break
         ser.write(chr(ord('0') + current_hole_index))
         time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
         ser.write(chr(ord('a') + current_hole_index))
@@ -368,7 +379,9 @@ class Gui(QtGui.QMainWindow):
             print "current_hole_index:", current_hole_index
             print "goal_ee:", goal_ee
 
+        lock.acquire()
         is_reached_current_bottle = ((error_x < ERROR_IF_REACHED) and (error_y < ERROR_IF_REACHED) and (error_z < ERROR_IF_REACHED)) 
+        lock.release()
         # if is_reached_current_bottle:
         #     print "REACHED:", goal_ee
 
