@@ -26,6 +26,9 @@ def interactive_mode():
             print 'Invalid command'
             continue
         ser.write(input)
+        if input == 'w':
+            result = ser.read()
+            print result
 
 def lcm_mode():
     import_lcm_python()
