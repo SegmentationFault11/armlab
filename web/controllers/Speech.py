@@ -1,7 +1,6 @@
 from os import system
 from time import sleep
 from random import randint
-import threading
 
 JOKES = [('I asked my mom if by any chance I was adopted', 'She said, why would we choose you'), \
 ('Communism jokes are not funny', 'unless everyone gets them'), \
