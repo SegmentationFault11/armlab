@@ -16,14 +16,6 @@ def speak(sentence):
     system('say -v Daniel "' + sentence + '"')
 
 def tell_joke(seed):
-    print("non wrapper called")
-    joke_thread = threading.Thread(target = tell_joke_wrapper, args = (seed, ))
-    joke_thread.daemon = True
-    joke_thread.start()
-    joke_thread.join()
-    print("non wrapper finished")
-
-def tell_joke_wrapper(seed):
     print("wrapper called, seed %s" % seed)
     speak("Here is a joke")
     sleep(1)
@@ -31,3 +23,5 @@ def tell_joke_wrapper(seed):
     for i in JOKES[seed]:
         speak(i)
         sleep(0.5)
+
+tell_joke(2)
