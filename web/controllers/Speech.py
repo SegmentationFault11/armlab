@@ -1,5 +1,6 @@
 from os import system
 from time import sleep
+from random import randint
 import threading
 
 JOKES = [('I asked my mom if by any chance I was adopted', 'She said, why would we choose you'), \
@@ -10,12 +11,12 @@ JOKES = [('I asked my mom if by any chance I was adopted', 'She said, why would 
 ('Funny that when a guy sleeps with tons of girls, hes a stud', 'But when I do this,somehow I am gay'), \
 ('My wife told me to get some pills for my erectile dysfunction', 'She went absolutely bonkers when I gave her some diet pills')]
 
-NUM_JOKES = 8
+NUM_JOKES = len(JOKES)
 
 def speak(sentence):
     system('say -v Daniel "' + sentence + '"')
 
-def tell_joke(seed):
+def tell_joke(seed = randint(0, NUM_JOKES - 1)):
     print("wrapper called, seed %s" % seed)
     speak("Here is a joke")
     sleep(1)
@@ -24,4 +25,3 @@ def tell_joke(seed):
         speak(i)
         sleep(0.5)
 
-tell_joke(2)
