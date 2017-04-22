@@ -48,7 +48,7 @@
 
 
 			<div class="form-group">
-				<input id="file_submit" type="submit" value="Request" class="btn btn-info">
+				<input id="send" type="submit" value="Request" class="btn btn-info" onclick="requestClick()">
 			</div>
 		</form>
 
@@ -66,5 +66,9 @@ var speakable = "{{ result }}";
 if (speakable !== "" && speakable !== "None") {
 	textToVoice("{{ result }}");
 }
+$('#infer_form').bind('submit', function (e) {
+    var button = $('#send');
+    button.prop('disabled', true);
+});
 </script>
 {% endblock %}

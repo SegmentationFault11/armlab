@@ -30,7 +30,8 @@ def infer_route():
 				speech_input = get_text_input(form['speech_input'] if \
 					'speech_input' in form else '')
 				logger.debug('Speech input: %s' % speech_input)
-				options['result'] = lcm_client.send_to_backend(username, speech_input)
+				options['result'] = lcm_client.send_to_backend(username, \
+					speech_input)
 				tell_joke()
 				logger.debug('Result: %s' % options['result'])
 			else:
