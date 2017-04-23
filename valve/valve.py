@@ -3,7 +3,7 @@ from lcm import LCM
 import serial, sys, os, inspect
 
 VALID_INPUTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', \
-'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']
+'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'w']
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
 #ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
@@ -26,6 +26,9 @@ def interactive_mode():
             print 'Invalid command'
             continue
         ser.write(input)
+        if input == 'w':
+            result = ser.read()
+            print result
 
 def lcm_mode():
     import_lcm_python()

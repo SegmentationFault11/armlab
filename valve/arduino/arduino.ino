@@ -1,3 +1,5 @@
+int weightSensorPin = A0;
+
 void setup() {
   Serial.begin(9600);
    pinMode(5, OUTPUT);
@@ -9,12 +11,24 @@ void setup() {
    pinMode(11, OUTPUT);
    pinMode(12, OUTPUT);
    pinMode(13, OUTPUT);
+
+   pinMode(weightSensorPin, INPUT); //weight sensor
 }
 
 void loop() {
   if (Serial.available()) {
     char c = Serial.read();
-    if (c == '0') {
+
+    if (c == 'w') { //mesure the cup weight
+         int weight = analogRead(weightSensorPin);
+
+         if (weight > 30) {  //check the weight
+          Serial.write("B"); //bad
+         } else {
+          Serial.write("G"); //good
+         }
+    }
+    else if (c == '0') {
       digitalWrite(5, HIGH);
     } 
     else if (c == 'a') {

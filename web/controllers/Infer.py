@@ -2,6 +2,7 @@ from flask import Blueprint, session, render_template, request
 from AccessManagement import login_required
 from LcmClient import lcm_client
 from Utilities import get_text_input, logger
+from Speech import tell_joke, JOKES
 import os, inspect
 
 
@@ -29,13 +30,15 @@ def infer_route():
 				speech_input = get_text_input(form['speech_input'] if \
 					'speech_input' in form else '')
 				logger.debug('Speech input: %s' % speech_input)
-				options['result'] = lcm_client.send_to_backend(username, speech_input)
+				options['result'] = lcm_client.send_to_backend(username, \
+					speech_input)
+				tell_joke()
 				logger.debug('Result: %s' % options['result'])
 			else:
 				raise RuntimeError('Did you click the Ask button?')
 	except Exception as e:
 		logger.exception(e)
-		options['error'] = e
+		options['result'] = e
 		return render_template('infer.html', **options)
 	# Display.
 	return render_template('infer.html', **options)
