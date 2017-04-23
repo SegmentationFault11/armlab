@@ -12,14 +12,13 @@ from video import Video
 from threading import Lock
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2) # FIXME: uncomment
-#ser = serial.Serial('/dev/tty.usbmodem1421', 9600, timeout=2)
 ser.isOpen() # FIXME: uncomment
 
 """ Radians to/from  Degrees conversions """
 D2R = 3.141592/180.0
 R2D = 180.0/3.141592
 PI = np.pi
-
+#[0.19973263883694628, 0.0016855746897424617, 0.06664578153381727, -0.15], # new HOME
 """ Pyxel Positions of image in GUI """
 MIN_X = 310
 MAX_X = 950
@@ -53,7 +52,8 @@ FINAL_END_EFFECTORS = [
     [-0.072391107920756079, 0.14014306904605794, 0.18061180478670984, -0.15],
     [0.012632140474910281, 0.15722907280355261, 0.18061180478670984, -0.15],
     [0.093447433342095709, 0.12707529071151988, 0.18061180478670984, -0.15],
-    [0.19973263883694628, 0.0016855746897424617, 0.11064578153381727, -0.15], # HOME
+    [0.1903263883694628, 0.0016855746897424617, 0.15664578153381727, -0.15], # HOME 1
+    [0.1903263883694628, 0.0016855746897424617, 0.06664578153381727, -0.15], # HOME 2
     [10, 10, 10, 10] # GARBAGE
 ]
 
@@ -80,7 +80,6 @@ current_hole_index = 10
 is_reached_current_bottle = 0
 goal_ee = [0.0, 0.0, 0.0]
 
-
 def arm_handler(channel, data):
     global current_hole_index, is_reached_current_bottle, goal_ee
     goal_ee = [0.0, 0.0, 0.0]
@@ -95,10 +94,17 @@ def arm_handler(channel, data):
     hole_indices = []
     for i in range(msg.size):
         hole_indices.append(msg.hole_indices[i])
-    hole_indices_sorted = sorted(hole_indices)    
-    for i in range(msg.size):
+    hole_indices_sorted = sorted(hole_indices)
+    # add another point before going out of home
+    hole_indices_sorted = [9] + hole_indices_sorted
+
+    for i in range(msg.size+1):
+        # if (i == 1):
+        #     ex.change_speed(12)
         current_hole_index = hole_indices_sorted[i]
+        print "TEST 1"
         ex.driveToBottle(FINAL_END_EFFECTORS[current_hole_index])
+        print "TEST 2"
         while True:
             lock.acquire()
             if is_reached_current_bottle == 0:
@@ -107,13 +113,22 @@ def arm_handler(channel, data):
             else:
                 lock.release()
                 break
-        ser.write(chr(ord('0') + current_hole_index))
-        time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
-        ser.write(chr(ord('a') + current_hole_index))
-        time.sleep(1.0)
+        
+        if (i == 0):
+            time.sleep(0.5)
+        else:
+            ser.write(chr(ord('0') + current_hole_index))
+            time.sleep(msg.stop_times[hole_indices.index(hole_indices_sorted[i])])  
+            ser.write(chr(ord('a') + current_hole_index))
+            time.sleep(1.0)
+
         is_reached_current_bottle = 0
-    # ex.driveToHome() # Drive home   
-    ex.mixDrink()
+    # ex.driveToHome() # Drive home
+    
+    if (msg.size > 1):
+        ex.mixDrink()
+    else:
+        ex.driveToHome()
 
 
 def handle_lcm():
@@ -169,7 +184,9 @@ class Gui(QtGui.QMainWindow):
         Connect Sliders to Function
         LAB TASK: CONNECT THE OTHER 5 SLIDERS IMPLEMENTED IN THE GUI 
         """ 
-        self.ui.sldrShoulder.setValue(-90)
+        self.ui.sldrShoulder.setValue(-112.1)
+        self.ui.sldrElbow.setValue(10.8)
+        self.ui.sldrWrist.setValue(18.4)
         self.ui.sldrMaxTorque.setValue(90)
         self.ui.sldrSpeed.setValue(12)
 
@@ -186,8 +203,8 @@ class Gui(QtGui.QMainWindow):
         """ Connect Buttons to Functions 
         LAB TASK: NAME AND CONNECT BUTTONS AS NEEDED
         """
-        self.ui.btnUser1.setText("Find Mix Points")
-        self.ui.btnUser1.clicked.connect(self.findMixPoints)
+        self.ui.btnUser1.setText("Check Pressure Sensor")
+        self.ui.btnUser1.clicked.connect(self.checkPressureSensor)
 
         self.ui.btnUser2.setText("Mix Drink")
         self.ui.btnUser2.clicked.connect(self.mixDrink)
@@ -468,6 +485,14 @@ class Gui(QtGui.QMainWindow):
             print "End Effector:", str(end_effector_for_ik)
         self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))
 
+    def checkPressureSensor(self):
+        print "Checking weight..."
+        ser.write('w')
+        time.sleep(1.0)
+        result = ser.read()
+
+        print "result:", result    
+
     def driveToBottle0(self):   
         self.driveToBottle(FINAL_END_EFFECTORS[0])
 
@@ -495,9 +520,9 @@ class Gui(QtGui.QMainWindow):
     def driveToBottle8(self):   
         self.driveToBottle(FINAL_END_EFFECTORS[8])   
 
-    def driveToHome(self):   
-        self.driveToBottle(FINAL_END_EFFECTORS[9])                     
-
+    def driveToHome(self):
+        thread.start_new_thread( handle_driving_home, () )
+    
     def driveToBottle(self, end_effector):
         global goal_ee
         goal_ee = end_effector
@@ -524,6 +549,28 @@ class Gui(QtGui.QMainWindow):
 
         thread.start_new_thread( handle_mixing, () )
 
+def handle_driving_home():
+        global current_hole_index, is_reached_current_bottle, goal_ee
+           
+        current_home_indices = [9,10]
+
+        while True:
+            for j in range(2):
+                if (j==1):
+                        lock.acquire()
+                        ex.ui.sldrSpeed.setValue(3)
+                        lock.release()
+                    #print "Driving to", k, ":", MIX_END_EFFECTORS[k]
+                ex.driveToBottle(FINAL_END_EFFECTORS[current_home_indices[j]])
+                while (is_reached_current_bottle == 0):
+                    pass
+                #print "Sleeping..."    
+                time.sleep(0.4)  
+                is_reached_current_bottle = 0
+            break        
+        lock.acquire()
+        ex.ui.sldrSpeed.setValue(12)
+        lock.release()
 def handle_mixing():
         global current_hole_index, is_reached_current_bottle, goal_ee
            
