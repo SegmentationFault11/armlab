@@ -204,7 +204,7 @@ class Gui(QtGui.QMainWindow):
         LAB TASK: NAME AND CONNECT BUTTONS AS NEEDED
         """
         self.ui.btnUser1.setText("Check Pressure Sensor")
-        self.ui.btnUser1.clicked.connect(self.checkPressureSensor)
+        self.ui.btnUser1.clicked.connect(self.isPressureSensorOccupied)
 
         self.ui.btnUser2.setText("Mix Drink")
         self.ui.btnUser2.clicked.connect(self.mixDrink)
@@ -485,13 +485,16 @@ class Gui(QtGui.QMainWindow):
             print "End Effector:", str(end_effector_for_ik)
         self.ui.rdoutStatus.setText("End Effector Recorded: " + str(end_effector_for_ik))
 
-    def checkPressureSensor(self):
+    def isPressureSensorOccupied(self):
         print "Checking weight..."
         ser.write('w')
-        time.sleep(1.0)
+        time.sleep(0.1)
         result = ser.read()
-
-        print "result:", result    
+        print "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6 result:", result  
+        if result == 'G':
+            return 0
+        elif result == 'B':
+            return 1          
 
     def driveToBottle0(self):   
         self.driveToBottle(FINAL_END_EFFECTORS[0])

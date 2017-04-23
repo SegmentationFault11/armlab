@@ -63,7 +63,7 @@ class LcmClient(object):
 		if not DEBUG:
 			try:
 				camera_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				camera_socket.connect(('localhost', 12000))
+				camera_socket.connect(('35.2.227.11', 12000))
 				camera_socket.send("Get Locations" + '\0')
 				rcv = camera_socket.recv(512)
 			except Exception as e:
@@ -84,6 +84,8 @@ class LcmClient(object):
 		# ...{hole_id|april_id}...
 		# If rcv == '{7|2}{5|0}{4|1}', (assuming single-digit)
 		# return {'Apple Juice': 7, 'Vodka': 5, 'Orange Juice': 4}.
+		if 'FATAL' in rcv:
+			raise RuntimeError(rcv)
 		rtn = {}
 		ingred_name = ''
 		hole_id = 0

@@ -14,7 +14,8 @@ JOKES = [['I asked my mom if by any chance I was adopted', 'She said, why would 
 NUM_JOKES = len(JOKES)
 
 def speak(sentence):
-    system('say -v Daniel "' + sentence + '"')
+    #system('say -v Daniel "' + sentence + '"')
+    pass
 
 def tell_joke(seed = randint(0, NUM_JOKES - 1)):
     logger.debug("wrapper called, seed %s" % seed)

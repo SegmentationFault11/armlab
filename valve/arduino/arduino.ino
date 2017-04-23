@@ -22,7 +22,7 @@ void loop() {
     if (c == 'w') { //mesure the cup weight
          int weight = analogRead(weightSensorPin);
 
-         if (weight > 30) {  //check the weight
+         if (weight > 15) {  //check the weight
           Serial.write("B"); //bad
          } else {
           Serial.write("G"); //good

@@ -18,7 +18,7 @@
 #define IS_APPLE 0
 #endif
 
-#define CAMERA_ID 1
+:x
 #define MAX_CAMERA_TRIES 5
 
 atomic<bool> grabber_go;

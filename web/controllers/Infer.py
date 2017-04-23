@@ -3,10 +3,26 @@ from AccessManagement import login_required
 from LcmClient import lcm_client
 from Utilities import get_text_input, logger
 from Speech import tell_joke, JOKES
-import os, inspect
+from time import sleep
+import os, inspect, serial
 
 
 infer = Blueprint('infer', __name__, template_folder='templates')
+
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout=2)
+ser.isOpen()
+
+def is_pressure_sensor_occupied():
+	ser.write('w')
+	sleep(0.1)
+	result = ser.read()
+	logger.debug('Pressure sensor result: %s' % result)  
+	if result == 'G':
+		return False
+	elif result == 'B':
+		return True
+	else:
+		raise RuntimeError('Pressure sensor result: %s' % result)
 
 @infer.route('/infer', methods=['GET', 'POST'])
 @login_required
@@ -26,6 +42,9 @@ def infer_route():
 				raise RuntimeError('Did you click the Ask button?')
 			# When the "op" field is equal to "infer".
 			elif form['op'] == 'infer':
+				# Check pressure sensor.
+				if is_pressure_sensor_occupied():
+					raise RuntimeError('Please place an empty cup on the gripper')
 				# # Classify the query.
 				speech_input = get_text_input(form['speech_input'] if \
 					'speech_input' in form else '')
